@@ -1,9 +1,9 @@
-bin_sens_01 OG Vorraum Tür ost unten rechts (S)			i2c_expand01		pin 0
-bin_sens_02 OG Vorraum Tür ost unten links (T)			i2c_expand01		pin 1
-bin_sens_03 OG Vorraum Tür ost oben (T)					    i2c_expand01		pin 2
-bin_sens_04 OG ost Balkon							            	i2c_expand01		pin 3
-bin_sens_05 OG ost rechts (S)					          		i2c_expand01		pin 4
-bin_sens_06 OG ost links (S)					            	i2c_expand01		pin 5
+bin_sens_01 OG Vorraum Tür ost unten rechts (S)   i2c_expand01		pin 0
+bin_sens_02 OG Vorraum Tür ost unten links (T)    i2c_expand01		pin 1
+bin_sens_03 OG Vorraum Tür ost oben (T)           i2c_expand01		pin 2
+bin_sens_04 OG ost Balkon                         i2c_expand01		pin 3
+bin_sens_05 OG ost rechts (S)                     i2c_expand01		pin 4
+bin_sens_06 OG ost links (S)                      i2c_expand01		pin 5
 
 bin_sens_07 OG Bad unten (T)						          	i2c_expand00		pin 0
 bin_sens_08 OG Bad oben ((T)						          	i2c_expand00		pin 1

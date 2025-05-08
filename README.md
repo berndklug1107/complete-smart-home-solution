@@ -28,7 +28,7 @@ You will need some knowledge base about wiring, good tools (soldering iron, sold
 The big goal of binary_sensors is the capability to handle more or less all available entities in your home. In /yaml you find the config-files of all esp devices (esp01 - esp04, esp32-01 - esp32-06, esp05 is dsmr to get smartmeter data, energy consumption). With one binary_sensor you can handle at least 8 operations, good example is bin_sens_85 on esp32-05: 3 operations for blinder handling, 2 operations for light control and dimming, 2 operations for streaming service on media_player.nad_kueche (Radio Paradise Main and Rock). Since flac streaming from radioparadise.com breaks after 4-5 min I need to re-transcode the stream and offer it again in my lan with stream_rp_main.h which gets started by stream_rp_main.service on  This stream is used on esp32-05 and works perfect. bin_sens_70 shows the way how to open garage from outside (modified:-))
 
 #
-
+#
 
 further requirements:
 
@@ -45,7 +45,7 @@ I use these triac boards (both high quality products available at tindie.com):
 - 1 x “ESP32 Floor Heating Valve Controller” (Voltlog) → esp32-01
 - 3 x “8CH AC LED Light Dimmer Module Controller Board” (Krida) → esp32-04, esp32-06
 	(images → heating control)
-
+#
 
 _- media handling (NVR surveillance system, media streaming, media hosting, file server)_
 

@@ -1,79 +1,79 @@
 bin_sens_01 OG Vorraum Tür ost unten rechts (S)			i2c_expand01		pin 0
 bin_sens_02 OG Vorraum Tür ost unten links (T)			i2c_expand01		pin 1
-bin_sens_03 OG Vorraum Tür ost oben (T)					i2c_expand01		pin 2
-bin_sens_04 OG ost Balkon								i2c_expand01		pin 3
-bin_sens_05 OG ost rechts (S)							i2c_expand01		pin 4
-bin_sens_06 OG ost links (S)							i2c_expand01		pin 5
+bin_sens_03 OG Vorraum Tür ost oben (T)					    i2c_expand01		pin 2
+bin_sens_04 OG ost Balkon							            	i2c_expand01		pin 3
+bin_sens_05 OG ost rechts (S)					          		i2c_expand01		pin 4
+bin_sens_06 OG ost links (S)					            	i2c_expand01		pin 5
 
-bin_sens_07 OG Bad unten (T)							i2c_expand00		pin 0
-bin_sens_08 OG Bad oben ((T)							i2c_expand00		pin 1
+bin_sens_07 OG Bad unten (T)						          	i2c_expand00		pin 0
+bin_sens_08 OG Bad oben ((T)						          	i2c_expand00		pin 1
 bin_sens_09 OG Vorraum Tür mitte unten rechts (T)		i2c_expand00		pin 2
-bin_sens_10 OG Vorraum Tür mitte oben (S)				i2c_expand00		pin 3
+bin_sens_10 OG Vorraum Tür mitte oben (S)			    	i2c_expand00		pin 3
 bin_sens_11 OG Vorraum Tür mitte unten links (T)		i2c_expand00		pin 4
 
-bin_sens_12 OG mitte Tür rechts (S)						i2c_expand02		pin 0
-bin_sens_13 OG mitte Tür links (S)						i2c_expand02		pin 1
-bin_sens_14 OG mitte Bett R L (S)						i2c_expand02		pin 2
-bin_sens_15 OG mitte Bett R R (S)						i2c_expand02		pin 3
-bin_sens_16 OG mitte Bett L L (S)						i2c_expand02		pin 4
-bin_sens_17 OG mitte Bett L R (S)						i2c_expand02		pin 5
-bin_sens_18 OG mitte Balkon (S)							i2c_expand02		pin 6
+bin_sens_12 OG mitte Tür rechts (S)					      	i2c_expand02		pin 0
+bin_sens_13 OG mitte Tür links (S)					      	i2c_expand02		pin 1
+bin_sens_14 OG mitte Bett R L (S)					        	i2c_expand02		pin 2
+bin_sens_15 OG mitte Bett R R (S)		        				i2c_expand02		pin 3
+bin_sens_16 OG mitte Bett L L (S)			         			i2c_expand02		pin 4
+bin_sens_17 OG mitte Bett L R (S)      			  			i2c_expand02		pin 5
+bin_sens_18 OG mitte Balkon (S)					        		i2c_expand02		pin 6
 
-bin_sens_20	OG west	Tür links							esp-01				GPIO12
-bin_sens_21	OG west	Tür rechts							esp-01				GPIO13
-bin_sens_22	OG west	Balkon								esp-01				GPIO14
+bin_sens_20	OG west	Tür links							          esp-01				GPIO12
+bin_sens_21	OG west	Tür rechts					        		esp-01				GPIO13
+bin_sens_22	OG west	Balkon							          	esp-01				GPIO14
 
-bin_sens_25 Vorraum Tür GZ (S)							i2c_expand04		pin 0
-bin_sens_26	GZ (S)										i2c_expand04		pin 1
-bin_sens_27 Vorraum Tür EZ rechts (T)					i2c_expand04		pin 2
-bin_sens_28	Vorraum Tür EZ links (T)					i2c_expand04		pin 3
-bin_sens_29 EZ Tür unten links (T)						i2c_expand04		pin 4
-bin_sens_30 EZ Tür unten rechts (T)						i2c_expand04		pin 5
-bin_sens_31 EZ Tür mitte (T)							i2c_expand04		pin 6
-bin_sens_32 EZ Tür oben rechts (T)						i2c_expand04		pin 7
-bin_sens_33 EZ Tür oben links (T)						i2c_expand04		pin 8
+bin_sens_25 Vorraum Tür GZ (S)							        i2c_expand04		pin 0
+bin_sens_26	GZ (S)									              	i2c_expand04		pin 1
+bin_sens_27 Vorraum Tür EZ rechts (T)					      i2c_expand04		pin 2
+bin_sens_28	Vorraum Tür EZ links (T)					      i2c_expand04		pin 3
+bin_sens_29 EZ Tür unten links (T)						      i2c_expand04		pin 4
+bin_sens_30 EZ Tür unten rechts (T)						      i2c_expand04		pin 5
+bin_sens_31 EZ Tür mitte (T)							          i2c_expand04		pin 6
+bin_sens_32 EZ Tür oben rechts (T)				      		i2c_expand04		pin 7
+bin_sens_33 EZ Tür oben links (T)					        	i2c_expand04		pin 8
 
-bin_sens_40 Windfang Tür unten							i2c_expand05		pin 0
-bin_sens_41 Windfang Tür oben							i2c_expand05		pin 1
+bin_sens_40 Windfang Tür unten						        	i2c_expand05		pin 0
+bin_sens_41 Windfang Tür oben							          i2c_expand05		pin 1
 bin_sens_42 EG Vorraum Stiege OG unten links (T)		i2c_expand05		pin 2
-bin_sens_43 EG Vorraum Stiege OG oben (S)				i2c_expand05		pin 3
+bin_sens_43 EG Vorraum Stiege OG oben (S)				    i2c_expand05		pin 3
 bin_sens_44 EG Vorraum Stiege OG unten rechts (T)		i2c_expand05		pin 4
-bin_sens_45 EG Vorraum Stiege mitte (S)					i2c_expand05		pin 5
-pir03		PIR EG Eingang								i2c_expand05		pin 6
+bin_sens_45 EG Vorraum Stiege mitte (S)					    i2c_expand05		pin 5
+pir03		PIR EG Eingang							              	i2c_expand05		pin 6
 
-pir02		PIR	Keller									i2c_expand07		pin 0
-bin_sens_49 Vorraum Keller WC							i2c_expand07		pin 1
-bin_sens_50 Vorraum Keller Tür Bad R (T)				i2c_expand07		pin 2
-bin_sens_51 Vorraum Keller Tür Bad L (T)				i2c_expand07		pin 3
-bin_sens_52 Keller Bad Tür oben R (T)					i2c_expand07		pin 4
-bin_sens_53 Keller Bad Tür unten (S)					i2c_expand07		pin 5
-bin_sens_54 Keller Bad Tür oben L (T)					i2c_expand07		pin 6
+pir02		PIR	Keller									                i2c_expand07		pin 0
+bin_sens_49 Vorraum Keller WC							          i2c_expand07		pin 1
+bin_sens_50 Vorraum Keller Tür Bad R (T)			    	i2c_expand07		pin 2
+bin_sens_51 Vorraum Keller Tür Bad L (T)		    		i2c_expand07		pin 3
+bin_sens_52 Keller Bad Tür oben R (T)				      	i2c_expand07		pin 4
+bin_sens_53 Keller Bad Tür unten (S)			      		i2c_expand07		pin 5
+bin_sens_54 Keller Bad Tür oben L (T)			      		i2c_expand07		pin 6
 bin_sens_55 Vorraum Keller Tür Speis oben R (T)			i2c_expand07		pin 7
 bin_sens_56 Vorraum Keller Tür Speis unten (S)			i2c_expand07		pin 8
 bin_sens_57 Vorraum Keller Tür Speis mitte (T)			i2c_expand07		pin 9
 bin_sens_58 Vorraum Keller Tür Speis oben L (S)			i2c_expand07		pin 10
 
-bin_sens_61 Tür Eingang K oben (T)						i2c_expand06		pin 1
-bin_sens_62 Tür Eingang K unten (T)						i2c_expand06		pin 2
-bin_sens_63 WR K Tür oben (T)							i2c_expand06		pin 3
-bin_sens_64 Vorraum K Tür WR R (T)						i2c_expand06		pin 4
-bin_sens_65 Vorraum K Tür WR L (T)						i2c_expand06		pin 5
-bin_sens_66 WR K Tür unten (T)							i2c_expand06		pin 6
+bin_sens_61 Tür Eingang K oben (T)						      i2c_expand06		pin 1
+bin_sens_62 Tür Eingang K unten (T)						      i2c_expand06		pin 2
+bin_sens_63 WR K Tür oben (T)							          i2c_expand06		pin 3
+bin_sens_64 Vorraum K Tür WR R (T)						      i2c_expand06		pin 4
+bin_sens_65 Vorraum K Tür WR L (T)						      i2c_expand06		pin 5
+bin_sens_66 WR K Tür unten (T)							        i2c_expand06		pin 6
 
-pir05		PIR	Garage									i2c_expand08		pin 0
-gtor_state	Status Garagentor							i2c_expand08		pin 1
-bin_sens_70 Garage Tür (T)								i2c_expand08		pin 2
-bin_sens_71 Garage Tür (S)								i2c_expand08		pin 3
-bin_sens_72 Keller Bad Tür Garage oben (T)				i2c_expand08		pin 4
-bin_sens_73 Keller Bad Tür Garage unten (T)				i2c_expand08		pin 5
+pir05		PIR	Garage									                i2c_expand08		pin 0
+gtor_state	Status Garagentor						           	i2c_expand08		pin 1
+bin_sens_70 Garage Tür (T)								          i2c_expand08		pin 2
+bin_sens_71 Garage Tür (S)								          i2c_expand08		pin 3
+bin_sens_72 Keller Bad Tür Garage oben (T)			  	i2c_expand08		pin 4
+bin_sens_73 Keller Bad Tür Garage unten (T)			  	i2c_expand08		pin 5
 
-bin_sens_80 EG Vorraum Tür WC mitte (S)					i2c_expand03		pin 0
-bin_sens_81 EG Vorraum Tür WC unten R (T)				i2c_expand03		pin 1
-bin_sens_82 EG Vorraum Tür WC unten L (T)				i2c_expand03		pin 2
-bin_sens_83 EG Vorraum Tür WC oben L (T)				i2c_expand03		pin 3
-bin_sens_84 EG Vorraum Tür WC oben R (T)				i2c_expand03		pin 4
-bin_sens_85 Küche Tür									i2c_expand03		pin 5
-bin_sens_86 frei										i2c_expand03		pin 6
-bin_sens_87	EZ Terrassentür								i2c_expand03		pin 7
-bin_sens_88 WZ Schiebetür								i2c_expand03		pin 8
-bin_sens_89 frei										i2c_expand03		pin 9
+bin_sens_80 EG Vorraum Tür WC mitte (S)					    i2c_expand03		pin 0
+bin_sens_81 EG Vorraum Tür WC unten R (T)			    	i2c_expand03		pin 1
+bin_sens_82 EG Vorraum Tür WC unten L (T)			    	i2c_expand03		pin 2
+bin_sens_83 EG Vorraum Tür WC oben L (T)		    		i2c_expand03		pin 3
+bin_sens_84 EG Vorraum Tür WC oben R (T)		    		i2c_expand03		pin 4
+bin_sens_85 Küche Tür									              i2c_expand03		pin 5
+bin_sens_86 frei									                	i2c_expand03		pin 6
+bin_sens_87	EZ Terrassentür								          i2c_expand03		pin 7
+bin_sens_88 WZ Schiebetür							            	i2c_expand03		pin 8
+bin_sens_89 frei										                i2c_expand03		pin 9

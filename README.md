@@ -38,6 +38,7 @@ I use these triac boards (both high quality products available at tindie.com):
 	3 “8CH AC LED Light Dimmer Module Controller Board” (Krida) → esp32-04, esp32-06
 	(images → heating control)
 
+
 _- media handling (NVR surveillance system, media streaming, media hosting, file server)_
 
 raspberry pi5 (pi402) is a data and media server with a 512GB SD card and Google coral TPU for 

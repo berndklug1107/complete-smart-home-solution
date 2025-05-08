@@ -74,6 +74,6 @@ bin_sens_83 EG Vorraum Tür WC oben L (T)            i2c_expand03		pin 3
 bin_sens_84 EG Vorraum Tür WC oben R (T)            i2c_expand03		pin 4
 bin_sens_85 Küche Tür                               i2c_expand03		pin 5
 bin_sens_86 frei                                    i2c_expand03		pin 6
-bin_sens_87	EZ Terrassentür                         i2c_expand03		pin 7
+bin_sens_87 EZ Terrassentür                         i2c_expand03		pin 7
 bin_sens_88 WZ Schiebetür                           i2c_expand03		pin 8
 bin_sens_89 frei                                    i2c_expand03		pin 9

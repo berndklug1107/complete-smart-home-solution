@@ -1,0 +1,82 @@
+default_config:
+recorder:
+
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+rflink:
+   port: /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+
+media_player:
+  - platform: vlc
+    name: VLC Kueche
+    arguments: '--rc-host=10.0.0.57:4212'
+  - platform: vlc
+    name: VLC Bad
+    arguments: '--rc-host=10.0.0.57:4213'
+
+switch:
+  - platform: rflink
+    devices:
+       kaku_000041_1:
+         name: switch_a01
+       kaku_000041_2:
+         name: switch_a02
+    automatic_add: false
+
+shell_command:
+  shutdown_zero04: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.31 sudo shutdown now"
+
+
+cover:
+   - platform: rflink
+     devices:
+       warema_408c_01:
+        name: warema1
+        signal_repetitions: 3
+       warema_408c_02:
+        name: warema2
+        signal_repetitions: 3
+       warema_408c_03:
+        name: warema3
+        signal_repetitions: 3
+       warema_408c_04:
+        name: warema4
+        signal_repetitions: 3
+       warema_a677_01:
+        name: warema5
+        signal_repetitions: 3
+       warema_a677_02:
+        name: warema6
+        signal_repetitions: 3
+       warema_a677_03:
+        name: warema7
+        signal_repetitions: 3
+       warema_a677_04:
+        name: warema8
+        signal_repetitions: 3
+       warema_a677_05:
+        name: warema_wz
+        signal_repetitions: 3
+       warema_a677_06:
+        name: warema_ez_k
+        signal_repetitions: 3
+       warema_a677_07:
+        name: warema_front
+        signal_repetitions: 3
+       warema_408c_05:
+        name: warema_k
+        signal_repetitions: 3
+       warema_408c_06:
+        name: warema_ez
+        signal_repetitions: 3
+       warema_408c_07:
+        name: warema_alle
+        signal_repetitions: 3
+
+logger:
+  default: error

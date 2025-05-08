@@ -1,0 +1,229 @@
+substitutions:
+  device_name: esp-04               #   Garage
+
+esphome:
+  name: ${device_name}
+
+esp8266:
+  board: d1_mini
+
+logger:
+
+api:
+  encryption:
+    key: "B9zuGLr3fy/yRWXIRRF7XusPoaDtXJuXfJYEWB3GAms="
+
+ota:
+  - platform: esphome
+    password: "49fc315bf5eacc2540fba43f6558679f"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "${device_name} Hotspot"
+    password: "RvXyG6yx8I2B"
+
+captive_portal:
+
+mqtt:
+  broker: 10.0.0.10
+  username: mqtt
+  password: mqtt
+  discovery: false
+
+i2c:
+  - id: bus_a
+    sda: GPIO4
+    scl: GPIO5
+    scan: true
+
+mcp23017:
+  - id: i2c_expand08
+    address: 0x20
+    i2c_id: bus_a
+
+button:
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal ${device_name}"
+    update_interval: 60s
+
+  - platform: dht
+    pin: GPIO2
+    model: DHT22
+    temperature:
+      name: "Temp Garage"
+      filters:
+       - offset: 0
+    humidity:
+      name: "Humidity Garage"
+      filters:
+       - offset: 0
+    update_interval: 50s
+
+
+binary_sensor:
+
+  - platform: gpio
+    name: "bin_sens_71"
+    id: bin_sens_71
+    pin:
+      number: GPIO12
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.5s
+        - OFF for at least 0.2s
+      then:
+        - mqtt.publish:
+            topic: "esp32-02/switch/i2c_relay05_sw13/command"
+            payload: "TOGGLE"
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+      then:
+        - mqtt.publish:
+            topic: "esp32-02/button/garage_tor/command"
+            payload: "PRESS"
+
+  - platform: gpio
+    name: "bin_sens_72"
+    id: bin_sens_72
+    pin:
+      number: GPIO13
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_press:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script03"
+            payload: "pressed03"
+    on_release:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script03"
+            payload: "released03"
+
+  - platform: gpio
+    name: "bin_sens_73"
+    id: bin_sens_73
+    pin:
+      number: GPIO14
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.5s
+      then:
+         - mqtt.publish:
+             topic: "esp32-02/switch/i2c_relay05_sw01/command"
+             payload: "TOGGLE"
+    - timing:
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.5s
+      then:
+         - mqtt.publish:
+             topic: "esp32-02/switch/i2c_relay05_sw03/command"
+             payload: "TOGGLE"
+
+
+
+  - platform: gpio           # PIR
+    name: "pir00"
+    id: pir00
+    icon: mdi:motion-sensor
+    pin:
+      mcp23xxx: i2c_expand08
+      number: 3
+      mode:
+        input: true
+    device_class: motion
+
+          
+  - platform: gpio            # Reed Relay
+    name: "GTor state"
+    id: gtor_state
+    pin:
+      mcp23xxx: i2c_expand08
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: garage_door
+    on_press:
+      then:
+        - mqtt.publish:
+            topic: "esp32-05/light/led_02/command"
+            payload: '{"state": "ON", "effect": "blink_07"}'
+    on_release:
+      then:
+        - mqtt.publish:
+            topic: "esp32-05/light/led_02/command"
+            payload: '{"state": "OFF"}'
+
+  - platform: gpio            # outdoor button
+    name: "bin_sens_70"
+    id: bin_sens_70
+    icon: mdi:gesture-tap-hold
+    pin:
+      mcp23xxx: i2c_expand08
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at least 3s
+        - OFF for at most 0.3s
+        - ON for at least 2s
+        - OFF for at least 2s
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at least 4s
+        - OFF for at most 0.4s
+        - ON for at most 0.3s
+
+      then:
+        - mqtt.publish:
+            topic: "esp32-02/button/garage_tor/command"
+            payload: "PRESS"
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at least 0.3s
+      then:
+        - mqtt.publish:
+            topic: "esp32-02/switch/i2c_relay05_sw11/command"
+            payload: "TOGGLE"
+
+    - timing:
+         - ON for at most 0.3s
+         - OFF for at most 0.3s
+         - ON for 0.3s to 1s
+         - OFF for at least 1s
+      then:
+         - mqtt.publish:
+             topic: "esp32-02/switch/i2c_relay05_sw13/command"
+             payload: "TOGGLE"

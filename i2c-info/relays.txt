@@ -1,0 +1,54 @@
+							upper floor
+
+switch.i2c_relay01_sw00		Deckenspots klein				
+switch.i2c_relay01_sw01		Deckenspots groß				
+switch.i2c_relay01_sw02		OG Ost Balkon
+switch.i2c_relay01_sw03		Steckdose ost
+
+switch.i2c_relay02_sw00		Bad Deckenspots						(power_supply)
+switch.i2c_relay02_sw01		Bad Bodenspots
+switch.i2c_relay02_sw02		Wandlicht OG Vorraum
+switch.i2c_relay02_sw03		Steckdose Bad
+switch.i2c_relay02_sw04		OG Mitte Deckenspots
+switch.i2c_relay02_sw05		OG Mitte Balkon
+switch.i2c_relay02_sw06		OG Mitte Schranklicht
+switch.i2c_relay02_sw07		free
+
+switch.i2c_relay03_sw00		Deckenspots klein
+switch.i2c_relay03_sw01		Deckenspots groß
+switch.i2c_relay03_sw02		OG west Balkon
+switch.i2c_relay03_sw03		Steckdose west
+
+					
+							ground floor
+					
+switch.i2c_relay06_sw00		Lichtschacht WZ EZ 					(normally closed)
+switch.i2c_relay06_sw01		Terrasse no dimm
+switch.i2c_relay06_sw03		Dimmer EZ Tisch						(power_supply)
+switch.i2c_relay06_sw04		Dimmer Küche						(power_supply)
+switch.i2c_relay06_sw05		Dimmer EZ Wand						(power_supply)
+switch.i2c_relay06_sw06		Dimmer Terrasse						(power_supply)
+switch.i2c_relay06_sw08 	Dimmer Wand EG/Stiege				(power_supply)
+
+
+							basement
+							
+switch.heat_main			heat_main
+switch.triac_eg				triac_eg
+switch.fan_bad				fan_bad					
+							
+garage_tor					Garagentor Öffner
+switch.i2c_relay05_sw01		Wandlicht Bad Keller
+switch.i2c_relay05_sw02		Dimmer Licht K Wohnraum 			(power_supply)
+switch.i2c_relay05_sw03		Bodenspots Bad Keller
+switch.i2c_relay05_sw04		Speisekammer
+switch.i2c_relay05_sw05		WC Keller
+switch.i2c_relay05_sw06		Bodenspots Keller / Stiege
+switch.i2c_relay05_sw07		Dimmer Wandlicht Keller / Stiege	(power_supply)
+switch.i2c_relay05_sw08		Gästezimmer
+switch.i2c_relay05_sw09		Bodenspots EG / Stiege / OG
+switch.i2c_relay05_sw10		Windfang EG
+switch.i2c_relay05_sw11		Aussenlicht EG Eingang
+switch.i2c_relay05_sw12		WC EG
+switch.i2c_relay05_sw13		Garage Licht
+switch.i2c_relay05_sw14		Windfang Keller

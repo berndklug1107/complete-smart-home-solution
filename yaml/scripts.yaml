@@ -1,0 +1,82 @@
+cover-close_all:
+  alias: cover-close_all
+  sequence:
+  - action: cover.close_cover
+    target:
+      entity_id:
+      - cover.warema_alle
+      - cover.rollo_alle
+    data: {}
+  mode: single
+  icon: mdi:blinds-horizontal
+  description: cover-close_all
+cover-open_winter:
+  sequence:
+  - action: cover.open_cover
+    target:
+      entity_id:
+      - cover.warema_alle
+      - cover.rollo_keller
+      - cover.rollo_gz
+    data: {}
+  alias: cover-open_winter
+  mode: single
+  icon: mdi:blinds-horizontal
+  description: cover-open_winter
+cover-open_all:
+  sequence:
+  - action: cover.open_cover
+    target:
+      entity_id:
+      - cover.warema_alle
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 3
+      milliseconds: 0
+  - action: cover.open_cover
+    data: {}
+    target:
+      entity_id: cover.rollo_alle
+  alias: cover-open_all
+  mode: single
+  icon: mdi:blinds-horizontal
+  description: cover-open_all
+cover-close_default:
+  sequence:
+  - action: cover.close_cover
+    target:
+      entity_id:
+      - cover.warema_front
+      - cover.rollo_gz
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 3
+      milliseconds: 0
+  - action: cover.close_cover
+    target:
+      entity_id:
+      - cover.warema_wz
+      - cover.rollo_keller
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 3
+      milliseconds: 0
+  - action: cover.close_cover
+    data: {}
+    target:
+      entity_id:
+      - cover.rollo_og_west
+      - cover.rollo_og_mitte
+      - cover.rollo_bad
+      - cover.rollo_og_ost
+    enabled: true
+  alias: cover-close_default
+  mode: single
+  icon: mdi:blinds-horizontal
+  description: cover-close_default

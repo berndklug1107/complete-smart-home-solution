@@ -1,0 +1,596 @@
+substitutions:            # Keller Verteilerschrank
+  device_name: esp32-02
+
+esphome:
+  name: ${device_name}
+
+external_components:
+  - source:
+      type: local
+      path: custom_components
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+
+api:
+  encryption:
+    key: "Njnl5o4iroRMgWr3YpytmvYSMqNbQfVUSqEf/k3GdoQ="
+
+ota:
+  - platform: esphome
+    password: "04d5a78ac1d8844c7f3726c2a9446ad1"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "${device_name} Hotspot"
+    password: "RNJfuP9fC7qe"
+
+captive_portal:
+
+
+mqtt:
+  broker: 10.0.0.10
+  username: mqtt
+  password: mqtt
+  discovery: false
+
+  on_message:
+    - topic: "dimmer/dimm_script02"
+      payload: "pressed02"
+      then:
+        - lambda: id(dim_control02).publish_state(true);
+        - script.execute: dimm_script02
+    - topic: "dimmer/dimm_script02"
+      payload: "released02"
+      then:
+        - lambda: id(dim_control02).publish_state(false);
+
+    - topic: "dimmer/dimm_script03"
+      payload: "pressed03"
+      then:
+        - lambda: id(dim_control03).publish_state(true);
+        - script.execute: dimm_script03
+    - topic: "dimmer/dimm_script03"
+      payload: "released03"
+      then:
+        - lambda: id(dim_control03).publish_state(false);
+
+script:
+  - id: dimm_script02
+    mode: restart
+    then:
+      - if:
+          condition: 
+            light.is_off: light02
+          then:
+          - delay: 1s
+          - while:
+              condition:
+                binary_sensor.is_on: dim_control02
+              then:
+                - light.dim_relative:
+                    id: light02
+                    relative_brightness: 3%
+                    transition_length: 0.2s
+                - delay: 0.1s
+          else:
+          - delay: 1s
+          - while:
+              condition:
+                and:
+                  - binary_sensor.is_on: dim_control02
+                  - light.is_on: light02
+              then:
+                - light.dim_relative:
+                    id: light02
+                    relative_brightness: -3%
+                    transition_length: 0.2s
+                - delay: 0.1s
+
+  - id: dimm_script03
+    mode: restart
+    then:
+      - if:
+          condition: 
+            light.is_off: light03
+          then:
+          - delay: 1s
+          - while:
+              condition:
+                binary_sensor.is_on: dim_control03
+              then:
+                - light.dim_relative:
+                    id: light03
+                    relative_brightness: 3%
+                    transition_length: 0.2s
+                - delay: 0.2s
+          else:
+          - delay: 1s
+          - while:
+              condition:
+                and:
+                  - binary_sensor.is_on: dim_control03
+                  - light.is_on: light03
+              then:
+                - light.dim_relative:
+                    id: light03
+                    relative_brightness: -3%
+                    transition_length: 0.2s
+                - delay: 0.2s
+
+
+i2c:
+  - id: bus_a
+    sda: GPIO21
+    scl: GPIO22
+    scan: true
+
+pcf8574:
+  - id: i2c_relay05
+    address: 0x27
+    pcf8575: True
+    i2c_id: bus_a
+
+mcp23017:
+  - id: i2c_expand06
+    address: 0x20
+    i2c_id: bus_a
+
+power_supply:
+  
+  - id: i2c_relay05_sw07          # Wandlicht Keller/Stiege
+    keep_on_time: 0.5s
+    enable_time: 0.5s
+    pin:
+      pcf8574: i2c_relay05
+      number: 7
+      inverted: true
+
+  - id: i2c_relay05_sw02          # Wohnraum Keller
+    keep_on_time: 0.5s
+    enable_time: 0.5s
+    pin:
+      pcf8574: i2c_relay05
+      number: 2
+      inverted: true
+
+
+
+output:
+
+# Dimmer Wandlicht Keller/Stiege
+  - platform: i2c_dimmer                 
+    address: 0x11
+    id: dimmer_output00
+    power_supply: i2c_relay05_sw07
+    min_power: 0.11
+    max_power: 0.55
+
+# Dimmer Wohnraum Keller
+  - platform: i2c_dimmer                 
+    address: 0x10
+    id: dimmer_output01
+    power_supply: i2c_relay05_sw02
+    min_power: 0.18
+    max_power: 0.7
+
+# Garagentor
+  - platform: gpio
+    id: gt
+    pin:
+      pcf8574: i2c_relay05
+      number: 0
+      mode:
+         output: true
+    inverted: true
+
+
+light:
+# Dimmer Wandlicht Keller/Stiege
+  - platform: monochromatic
+    id: light02
+    name: "light02"
+    output: dimmer_output00
+    icon: mdi:wall-sconce-round-variant-outline
+
+
+# Dimmer Wohnraum Keller
+  - platform: monochromatic
+    id: light03
+    name: "light03"
+    output: dimmer_output01
+    icon: mdi:chandelier
+
+
+button:
+
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false
+
+  - platform: output
+    name: "Garage Tor"
+    id: garage_tor
+#    icon: mdi:gesture-tap-button
+    output: gt
+    duration: 300ms
+
+switch:
+
+  - platform: gpio
+    name: "i2c_relay05_sw01"          # Wandlicht Bad Keller
+    id: i2c_relay05_sw01
+    icon: mdi:coach-lamp-variant
+    pin:
+      pcf8574: i2c_relay05
+      number: 1
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio
+    name: "i2c_relay05_sw03"          # Boden- Wandspots Bad Keller
+    id: i2c_relay05_sw03
+    icon: mdi:light-flood-down
+    pin:
+      pcf8574: i2c_relay05
+      number: 3
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                    # Speis
+    name: "i2c_relay05_sw04"
+    id: i2c_relay05_sw04
+    icon: mdi:ceiling-light-outline
+    pin:
+      pcf8574: i2c_relay05
+      number: 4
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                   # WC Keller
+    name: "i2c_relay05_sw05"
+    id: i2c_relay05_sw05
+    icon: mdi:ceiling-light-outline
+    pin:
+      pcf8574: i2c_relay05
+      number: 5
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                  # Bodenspots Keller/Stiege
+    name: "i2c_relay05_sw06"
+    id: i2c_relay05_sw06
+    icon: mdi:light-flood-down
+    pin:
+      pcf8574: i2c_relay05
+      number: 6
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                   # Gästezimmer
+    name: "i2c_relay05_sw08"
+    id: i2c_relay05_sw08
+    icon: mdi:chandelier
+    pin:
+      pcf8574: i2c_relay05
+      number: 8
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                 #  Bodenspots EG OG
+    name: "i2c_relay05_sw09"
+    id: i2c_relay05_sw09
+    icon: mdi:light-flood-down
+    pin:
+      pcf8574: i2c_relay05
+      number: 9
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                  # EG Windfang
+    name: "i2c_relay05_sw10"
+    id: i2c_relay05_sw10
+    icon: mdi:coach-lamp-variant
+    pin:
+      pcf8574: i2c_relay05
+      number: 10
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                  # Aussenlicht Eingang EG
+    name: "i2c_relay05_sw11"
+    id: i2c_relay05_sw11
+    icon: mdi:outdoor-lamp
+    pin:
+      pcf8574: i2c_relay05
+      number: 11
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                  #  WC EG
+    name: "i2c_relay05_sw12"
+    id: i2c_relay05_sw12
+    icon: mdi:ceiling-light-outline
+    pin:
+      pcf8574: i2c_relay05
+      number: 12
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio
+    name: "i2c_relay05_sw13"         # Garage Licht
+    id: i2c_relay05_sw13
+    icon: mdi:lightbulb-fluorescent-tube-outline
+    pin:
+      pcf8574: i2c_relay05
+      number: 13
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio
+    name: "i2c_relay05_sw14"         # Keller Windfang
+    id: i2c_relay05_sw14
+    icon: mdi:ceiling-light-outline
+    pin:
+      pcf8574: i2c_relay05
+      number: 14
+      mode:
+        output: true
+    inverted: true
+
+
+sensor:
+
+  - platform: dht
+    model: dht22
+    pin: GPIO25
+    temperature:
+      name: "Temp K Wohnraum"
+      filters:
+       - offset: 2
+    humidity:
+      name: "Humidity K Wohnraum"
+      filters:
+       - offset: 1
+    update_interval: 50s
+  
+  - platform: wifi_signal
+    name: "WiFi Signal ${device_name}"
+    update_interval: 60s
+
+
+binary_sensor:
+  - platform: template
+    id: dim_control02
+    internal: true
+
+  - platform: template
+    id: dim_control03
+    internal: true
+
+
+  - platform: gpio
+    name: "bin_sens_61"
+    id: bin_sens_61
+    pin:
+      mcp23xxx: i2c_expand06
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.5s
+        - OFF for at least 0.5s
+      then:
+      - switch.toggle: i2c_relay05_sw06
+    on_press:
+      then:
+      - if:
+          condition: 
+            light.is_off: light02
+          then:
+          - delay: 1s
+          - while:
+              condition:
+                binary_sensor.is_on: bin_sens_61
+              then:
+                - light.dim_relative:
+                    id: light02
+                    relative_brightness: 3%
+                    transition_length: 0.2s
+                - delay: 0.2s
+          else:
+          - delay: 1s
+          - while:
+              condition:
+                and:
+                  - binary_sensor.is_on: bin_sens_61
+                  - light.is_on: light02
+              then:
+                - light.dim_relative:
+                    id: light02
+                    relative_brightness: -3%
+                    transition_length: 0.2s
+                - delay: 0.2s
+
+  - platform: gpio
+    name: "bin_sens_62"
+    id: bin_sens_62
+    pin:
+      mcp23xxx: i2c_expand06
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.5s
+        - OFF for at least 0.5s
+      then:
+        - switch.toggle: i2c_relay05_sw11
+    - timing:
+        - ON for 0.5s to 1s
+        - OFF for at least 0.2s
+      then:
+        - switch.toggle: i2c_relay05_sw14
+
+  - platform: gpio
+    name: "bin_sens_63"
+    id: bin_sens_63
+    pin:
+      mcp23xxx: i2c_expand06
+      number: 3
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_press:
+      then:
+      - if:
+          condition: 
+            light.is_off: light03
+          then:
+          - delay: 0.5s
+          - while:
+              condition:
+                binary_sensor.is_on: bin_sens_63
+              then:
+                - light.dim_relative:
+                    id: light03
+                    relative_brightness: 3%
+                    transition_length: 0.2s
+                - delay: 0.2s
+          else:
+          - delay: 0.5s
+          - while:
+              condition:
+                and:
+                  - binary_sensor.is_on: bin_sens_63
+                  - light.is_on: light03
+              then:
+                - light.dim_relative:
+                    id: light03
+                    relative_brightness: -3%
+                    transition_length: 0.2s
+                - delay: 0.2s
+
+  - platform: gpio
+    name: "bin_sens_64"
+    id: bin_sens_64
+    pin:
+      mcp23xxx: i2c_expand06
+      number: 4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_press:
+      then:
+      - if:
+          condition: 
+            light.is_off: light02
+          then:
+          - delay: 0.5s
+          - while:
+              condition:
+                binary_sensor.is_on: bin_sens_64
+              then:
+                - light.dim_relative:
+                    id: light02
+                    relative_brightness: 3%
+                    transition_length: 0.2s
+                - delay: 0.2s
+          else:
+          - delay: 0.5s
+          - while:
+              condition:
+                and:
+                  - binary_sensor.is_on: bin_sens_64
+                  - light.is_on: light02
+              then:
+                - light.dim_relative:
+                    id: light02
+                    relative_brightness: -3%
+                    transition_length: 0.2s
+                - delay: 0.2s
+
+  - platform: gpio
+    name: "bin_sens_65"
+    id: bin_sens_65
+    pin:
+      mcp23xxx: i2c_expand06
+      number: 5
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_press:
+        - switch.toggle: i2c_relay05_sw06
+
+  - platform: gpio
+    name: "bin_sens_66"
+    id: bin_sens_66
+    pin:
+      mcp23xxx: i2c_expand06
+      number: 6
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at least 0.4s
+      then:
+        - switch.toggle: i2c_relay05_sw01
+    - timing:
+        - ON for 0.4s to 1s
+        - OFF for at least 0.5s
+      then:
+        - homeassistant.service:
+            service: cover.open_cover
+            data:
+              entity_id: cover.rollo_keller
+    - timing:
+        - ON for 1s to 2s
+        - OFF for at least 0.5s
+      then:
+        - homeassistant.service:
+            service: cover.close_cover
+            data:
+              entity_id: cover.rollo_keller
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+      then:
+        - homeassistant.service:
+            service: cover.stop_cover
+            data:
+              entity_id: cover.rollo_keller

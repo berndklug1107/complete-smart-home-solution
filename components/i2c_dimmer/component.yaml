@@ -1,0 +1,10 @@
+name: "i2c_dimmer"
+type: "output"
+config:
+  address:
+    type: int
+    required: true
+    description: "Die I2C-Adresse des Dimmers"
+files:
+  - i2c_dimmer.h
+  - i2c_dimmer.cpp

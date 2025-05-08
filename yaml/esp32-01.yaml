@@ -1,0 +1,481 @@
+substitutions:
+  device_name: esp32-01             # K Technik     red board
+
+esphome:
+  name: ${device_name}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+
+api:
+  encryption:
+    key: "nIs9PiHB5lvynoyHQxdcIAtCKgwTpEntF7+0F4P/H2k="
+
+ota:
+ - platform: esphome
+   password: "71c7b4a6919a2b867c0b7d8fb69a9023"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "${device_name} Hotspot"
+    password: "K6Rz3W7ZsnLL"
+
+captive_portal:
+
+
+button:
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false 
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal ${device_name}"
+    update_interval: 60s
+
+  - platform: dht
+    pin: GPIO33
+    model: DHT22
+    temperature:
+      name: "Temp GZ"
+      filters:
+        - offset: 0.9
+    humidity:
+      name: "Humidity GZ"
+      filters:
+        - offset: 10
+    update_interval: 50s
+
+  - platform: dht
+    pin: GPIO4
+    model: DHT22
+    temperature:
+      name: "Temp WZ"
+      filters:
+       - offset: 0.5
+    humidity:
+      name: "Humidity WZ"
+      filters:
+       - offset: 8
+    update_interval: 50s
+
+switch:           # Relay 	11
+  - platform: gpio
+    pin: GPIO16
+    icon: mdi:led-on
+    id: triac_keller_led_en
+    name: "triac_keller_LED_EN"
+
+binary_sensor:
+  - platform: gpio
+    name: "bin_sens_100"
+    id: bin_sens_100
+    pin:
+      number: GPIO34
+      mode:
+        input: true
+      inverted: true
+    device_class: connectivity
+    on_press:
+      - homeassistant.service:
+          service: switch.toggle
+          data:
+            entity_id: switch.heat_main
+
+light:
+  - platform: status_led
+    name: "triac_keller_state"
+    pin: GPIO2
+    icon: mdi:led-on
+
+output:
+                    # hk_k_wohnraum_02
+ - platform: slow_pwm
+   id: ch01
+   pin: GPIO13
+   period: 50s
+   zero_means_zero: true
+   min_power: 0.1
+   max_power: 0.6
+
+                      # hk_k_wohnraum_03
+ - platform: slow_pwm
+   id: ch02
+   pin: GPIO14
+   period: 50s
+   zero_means_zero: true
+   min_power: 0.1
+   max_power: 0.6
+
+                      # hk_k_wohnraum_01
+ - platform: slow_pwm
+   id: ch03
+   pin: GPIO15
+   period: 50s
+   zero_means_zero: true
+   min_power: 0.1
+   max_power: 0.6
+
+                      # hk_k_bad_03
+ - platform: slow_pwm
+   id: ch04
+   pin: GPIO18
+   period: 50s
+   zero_means_zero: true
+   min_power: 0.1
+   max_power: 0.6
+
+                      # hk_k_bad_02
+ - platform: slow_pwm
+   id: ch05
+   pin: GPIO19
+   period: 50s
+   zero_means_zero: true
+   min_power: 0.1
+   max_power: 0.6
+
+                      # hk_k_bad_01
+ - platform: slow_pwm
+   id: ch06
+   pin: GPIO23
+   period: 50s
+   zero_means_zero: true
+   min_power: 0.1
+   max_power: 0.6
+
+                     # hk_k_wc
+ - platform: slow_pwm
+   id: ch07
+   pin: GPIO25
+   period: 50s
+   zero_means_zero: true
+   min_power: 0.1
+   max_power: 0.5
+   
+                    # hk_k_vorraum_02
+ - platform: slow_pwm
+   id: ch08
+   pin: GPIO26
+   period: 50s
+   zero_means_zero: true
+   min_power: 0.1
+   max_power: 0.6
+
+                    # hk_k_vorraum_01
+ - platform: slow_pwm
+   id: ch09
+   pin: GPIO27
+   period: 50s
+   zero_means_zero: true
+   min_power: 0.1
+   max_power: 0.6
+
+
+servo:
+
+      # hk_k_wohnraum_02
+  - id: drive_01
+    output: ch01
+    min_level: 0
+    max_level: 0.7
+    idle_level: 0
+    restore: true
+
+      # hk_k_wohnraum_03
+  - id: drive_02
+    output: ch02
+    min_level: 0
+    max_level: 0.7
+    idle_level: 0
+    restore: true
+
+      # hk_k_wohnraum_01
+  - id: drive_03
+    output: ch03
+    min_level: 0
+    max_level: 0.7
+    idle_level: 0
+    restore: true
+
+      # hk_k_bad_03
+  - id: drive_04
+    output: ch04
+    min_level: 0
+    max_level: 0.7
+    idle_level: 0
+    restore: true
+
+      # hk_k_bad_02
+  - id: drive_05
+    output: ch05
+    min_level: 0
+    max_level: 0.7
+    idle_level: 0
+    restore: true
+
+      # hk_k_bad_01
+  - id: drive_06
+    output: ch06
+    min_level: 0
+    max_level: 0.7
+    idle_level: 0
+    restore: true
+
+      # hk_k_wc
+  - id: drive_07
+    output: ch07
+    min_level: 0
+    max_level: 0.7
+    idle_level: 0
+    restore: true
+
+      # hk_k_vorraum_02
+  - id: drive_08
+    output: ch08
+    min_level: 0
+    max_level: 0.7
+    idle_level: 0
+    restore: true
+
+      # hk_k_vorraum_01
+  - id: drive_09
+    output: ch09
+    min_level: 0
+    max_level: 0.7
+    idle_level: 0
+    restore: true
+
+
+number:
+
+  - platform: template
+    name: "hk_k_bad_01"
+    icon: mdi:pipe-valve
+    id: hk_k_bad_01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_06
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_k_bad_02"
+    id: hk_k_bad_02
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_05
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_k_bad_03"
+    id: hk_k_bad_03
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_04
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_k_wohnraum_01"
+    id: hk_k_wohnraum_01
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_03
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_k_wohnraum_02"
+    id: hk_k_wohnraum_02
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_01
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_k_wohnraum_03"
+    id: hk_k_wohnraum_03
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_02
+            level: !lambda 'return x / 100.0;'
+  
+  - platform: template
+    name: "hk_k_vorraum_01"
+    id: hk_k_vorraum_01
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_09
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_k_vorraum_02"
+    id: hk_k_vorraum_02
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_08
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_k_wc"
+    id: hk_k_wc
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_07
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_k_bad"
+    id: hk_k_bad
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_k_bad_01
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_k_bad_02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_k_bad_03
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_k_wohnraum"
+    id: hk_k_wohnraum
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_k_wohnraum_01
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_k_wohnraum_02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_k_wohnraum_03
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_k_vorraum"
+    id: hk_k_vorraum
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_k_vorraum_01
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_k_vorraum_02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_k_all"
+    id: hk_k_all
+    icon: mdi:pipe-valve
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_k_bad
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_k_wohnraum
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_k_vorraum
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_k_wc
+            value: !lambda 'return x;'
+

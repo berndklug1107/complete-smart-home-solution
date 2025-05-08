@@ -1,0 +1,1117 @@
+substitutions:
+  device_name: esp32-04           # K Technik - Heizkreissteuerung
+
+esphome:
+  name: ${device_name}
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+
+api:
+  encryption:
+    key: "9I/U4x1QEYDYOBZDNyPH8tAhLJ3vEf6jibKTq5cIyyQ="
+
+ota:
+ - platform: esphome 
+   password: "71c7b4a6919a2b867c0b7d8fb69a9023"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "${device_name} Hotspot"
+    password: "BL2aEfwYoSfW"
+
+captive_portal:
+
+
+button:
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false
+
+i2c:
+  - id: bus_a
+    sda: GPIO21
+    scl: GPIO22
+    scan: true
+    frequency: 400kHz
+
+mcp23017:
+  - id: i2c_expand09
+    address: 0x20
+    i2c_id: bus_a
+
+pcf8574:
+  - id: i2c_relay04
+    address: 0x27
+    pcf8575: false
+    i2c_id: bus_a
+
+ds248x:
+  i2c_id: bus_a
+  type: ds2482-800
+  address: 0x18
+  active_pullup: true
+  strong_pullup: false
+  bus_sleep: false
+  update_interval: 60s
+
+switch:
+
+  - platform: gpio
+    name: "heat_main"
+    id: heat_main
+    icon: mdi:heat-wave
+    restore_mode: RESTORE_DEFAULT_ON
+    pin:
+      pcf8574: i2c_relay04
+      number: 4
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio
+    name: "triac_eg"
+    id: triac_eg
+    icon: mdi:power
+    restore_mode: RESTORE_DEFAULT_ON    
+    pin:
+      pcf8574: i2c_relay04
+      number: 5
+      mode:
+        output: true
+    inverted: true
+    on_turn_on:
+    - delay: 500ms
+    - light.turn_on: led_003
+    on_turn_off:
+    - delay: 500ms
+    - light.turn_off: led_003
+
+  - platform: gpio
+    name: "fan_bad"
+    id: fan_bad
+    icon: mdi:fan
+    pin:
+      pcf8574: i2c_relay04
+      number: 7
+      mode:
+        output: true
+    inverted: true
+
+light:
+  - platform: binary
+    id: led_001
+    name: "led_001"
+    output: led001   
+    icon: mdi:led-on
+    effects:
+      - strobe:
+          name: blink_03
+          colors:
+            - state: true
+              duration: 0.3s
+            - state: false
+              duration: 0.3s
+      - strobe:
+          name: blink_05
+          colors:
+            - state: true
+              duration: 0.5s
+            - state: false
+              duration: 0.5s
+      - strobe:
+          name: blink_07
+          colors:
+            - state: true
+              duration: 0.7s
+            - state: false
+              duration: 0.7s
+      - strobe:
+          name: blink_1
+          colors:
+            - state: true
+              duration: 1s
+            - state: false
+              duration: 1s
+
+
+  - platform: binary
+    id: led_002
+    name: "led_002"
+    output: led002
+    icon: mdi:led-on
+    effects:
+      - strobe:
+          name: blink_03
+          colors:
+            - state: true
+              duration: 0.3s
+            - state: false
+              duration: 0.3s
+      - strobe:
+          name: blink_05
+          colors:
+            - state: true
+              duration: 0.5s
+            - state: false
+              duration: 0.5s
+      - strobe:
+          name: blink_07
+          colors:
+            - state: true
+              duration: 0.7s
+            - state: false
+              duration: 0.7s
+      - strobe:
+          name: blink_1
+          colors:
+            - state: true
+              duration: 1s
+            - state: false
+              duration: 1s
+
+  - platform: binary
+    id: led_003
+    name: "led_003"
+    output: led003
+    icon: mdi:led-on
+    effects:
+      - strobe:
+          name: blink_03
+          colors:
+            - state: true
+              duration: 0.3s
+            - state: false
+              duration: 0.3s
+      - strobe:
+          name: blink_05
+          colors:
+            - state: true
+              duration: 0.5s
+            - state: false
+              duration: 0.5s
+      - strobe:
+          name: blink_07
+          colors:
+            - state: true
+              duration: 0.7s
+            - state: false
+              duration: 0.7s
+      - strobe:
+          name: blink_1
+          colors:
+            - state: true
+              duration: 1s
+            - state: false
+              duration: 1s
+
+
+sensor:
+
+  - platform: aht10
+    variant: AHT20
+    i2c_id: bus_a
+    temperature:
+      name: "Temp K Technik"
+    humidity:
+      name: "Humidity K Technik"
+    update_interval: 60s
+
+        # 1 wire
+        # channel 0 (EG)
+
+  - platform: ds248x
+    channel: 0
+    address: 0x2e17dbc535646128
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-Vorraum02 VL"
+
+  - platform: ds248x
+    channel: 0
+    address: 0xdafb757e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-WZ01 VL"
+
+  - platform: ds248x
+    channel: 0
+    address: 0x46ee0e7f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-WZ01"
+
+  - platform: ds248x
+    channel: 0
+    address: 0xffc1917f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-WZ02"
+
+  - platform: ds248x
+    channel: 0
+    address: 0x4c177b7e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-WZ03"
+    filters:
+    - offset: 0.2
+
+  - platform: ds248x
+    channel: 0
+    address: 0xd97af67f0f64ff28 
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-WZ04"
+
+  - platform: ds248x
+    channel: 0
+    address: 0xad823e7f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-EZ01"
+
+  - platform: ds248x
+    channel: 0
+    address: 0xba0ab67f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-EZ02"
+
+  - platform: ds248x
+    channel: 0
+    address: 0xf88af57f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-EZ03"
+
+  - platform: ds248x
+    channel: 0
+    address: 0xe71fb37f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-EZ03 VL"
+
+        #  channel 1 (EG)
+
+  - platform: ds248x
+    channel: 1
+    address: 0xeec50e7e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-Kueche-Fenster"
+
+  - platform: ds248x
+    channel: 1
+    address: 0xdec0337f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "EG VL"
+
+  - platform: ds248x
+    channel: 1
+    address: 0x99e67e7e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "EG RL"
+
+  - platform: ds248x
+    channel: 1
+    address: 0x7f2b64f60264ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "EG OG VL"
+
+  - platform: ds248x
+    channel: 1
+    address: 0x74eb09b70164ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "EG OG RL"
+
+  - platform: ds248x
+    channel: 1
+    address: 0xaf33677e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "OG RL Kellersensor"
+
+  - platform: ds248x
+    channel: 1
+    address: 0xc3dd7f7e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "OG VL Kellersensor"
+
+  - platform: ds248x
+    channel: 1
+    address: 0x13f3317f0f64ff28 
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-Vorraum01"
+
+  - platform: ds248x
+    channel: 1
+    address: 0xe8fb3e6c0e64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-Vorraum02"
+                                        
+  - platform: ds248x
+    channel: 1
+    address: 0xbc73647e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-Kueche-Tuer"
+
+  - platform: ds248x
+    channel: 1
+    address: 0x1539667e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-Windfang"
+
+  - platform: ds248x
+    channel: 1
+    address: 0xe561097f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_EG-WC"
+
+    #    channel 2 (Keller)
+
+  - platform: ds248x
+    channel: 2
+    address: 0xc6c6cf7b0e64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "VL"
+
+  - platform: ds248x
+    channel: 2
+    address: 0x0bab377e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "RL"
+
+  - platform: ds248x
+    channel: 2
+    address: 0xcceb967f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "Keller RL"
+
+  - platform: ds248x
+    channel: 2
+    address: 0x0d9a3b7f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "Keller VL"
+
+          # channel 3 (Keller)
+
+  - platform: ds248x
+    channel: 3
+    address: 0xbe6d266c0e64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-WC"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x52de087f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-Vorraum01"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x88f43e7f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-Vorraum02"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x181d847f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-Bad01"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x436d767e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-Bad02"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x32e1317f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-Bad03"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x0e132e7f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-Wohnraum01"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x986cdcc535646128
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-Wohnraum02"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x81c7637e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_keller-Wohnraum03"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x0cae857f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-Bad01-VL"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x57e2077f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_keller-Wohnraum02 VL"
+
+  - platform: ds248x
+    channel: 3
+    address: 0x1137adc535646128
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_Keller-WC VL"
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${device_name}"
+    update_interval: 60s
+
+output:
+
+# Status-LEDs
+
+ - platform: gpio
+   id: led001
+   pin:
+     mcp23xxx: i2c_expand09
+     number: 0
+
+ - platform: gpio
+   id: led002
+   pin:
+     mcp23xxx: i2c_expand09
+     number: 1
+
+ - platform: gpio
+   id: led003
+   pin:
+     mcp23xxx: i2c_expand09
+     number: 2
+
+#  B o a r d 01
+
+ - platform: slow_pwm
+   id: ch01
+   pin: GPIO16
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.55
+
+ - platform: slow_pwm
+   id: ch02
+   pin: GPIO25
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch03
+   pin: GPIO26
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.5
+
+ - platform: slow_pwm
+   id: ch04
+   pin: GPIO27
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.5
+
+ - platform: slow_pwm
+   id: ch05
+   pin: GPIO14
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch06
+   pin: GPIO13
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch07
+   pin: GPIO33
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+
+#  B o a r d 02
+
+ - platform: slow_pwm
+   id: ch08
+   pin: GPIO17
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.5
+
+ - platform: slow_pwm
+   id: ch09
+   pin: GPIO18
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch10
+   pin: GPIO19
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch11
+   pin: GPIO4
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch12
+   pin: GPIO32
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch13
+   pin: GPIO23
+   period: 60s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+
+servo:
+  - id: drive_01
+    output: ch01
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_02
+    output: ch02
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_03
+    output: ch03
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_04
+    output: ch04
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_05
+    output: ch05
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_06
+    output: ch06
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_07
+    output: ch07
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_08
+    output: ch08
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_09
+    output: ch09
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_10
+    output: ch10
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_11
+    output: ch11
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_12
+    output: ch12
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+  - id: drive_13
+    output: ch13
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+
+
+number:
+  - platform: template
+    name: "hk_eg_board01"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_b01
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_ez03
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_kueche_fenster
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_kueche_tuer
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_windfang
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_vorraum01
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_vorraum02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wc
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_board02"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_b02
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_ez02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_ez01
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz04
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz03
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz01
+            value: !lambda 'return x;'
+ 
+  - platform: template
+    name: "hk_eg_all"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_all
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_kueche
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_ez
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_windfang
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_vorraum
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wc
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_kueche"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_kueche
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_kueche_fenster
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_kueche_tuer
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_vorraum"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_vorraum
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_vorraum01
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_vorraum02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_ez"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_ez
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_ez03
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_ez02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_ez01
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_wz"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_wz04
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz03
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz01
+            value: !lambda 'return x;'
+
+
+  - platform: template
+    name: "hk_eg_vorraum01"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_vorraum01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_04
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_vorraum02"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_vorraum02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_06
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_windfang"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_windfang
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_05
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_wc"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wc
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_07
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_kueche_fenster"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_kueche_fenster
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_02
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_kueche_tuer"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_kueche_tuer
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_03
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_ez01"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_ez01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_09
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_ez02"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_ez02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_08
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_ez03"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_ez03
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_01
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_wz01"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_13
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_wz02"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_12
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_wz03"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz03
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_11
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_wz04"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz04
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_10
+            level: !lambda 'return x / 100.0;'

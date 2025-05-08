@@ -1,0 +1,148 @@
+substitutions:
+  device_name: esp-01             #   OG West
+
+esphome:
+  name: ${device_name}
+
+esp8266:
+  board: d1_mini
+
+logger:
+
+api:
+  encryption:
+    key: "oWb6OYpPT/fmEO1JUqaTdfDMpbfppQYFD55PYkJ17Gg="
+
+ota:
+  - platform: esphome
+    password: "9d7d0f77d8f061c6a76da0f0fc8ad23f"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "${device_name} Hotspot"
+    password: "XIiz2kOE2MFx"
+
+captive_portal:
+
+button:
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal ${device_name}"
+    update_interval: 60s
+
+  - platform: dht
+    pin: GPIO2
+    model: DHT22
+    temperature:
+      name: "Temp OG West"
+      filters:
+       - offset: 1.1
+    humidity:
+      name: "Humidity OG West"
+      filters:
+       - offset: -7
+    update_interval: 50s
+
+i2c:
+  - id: bus_a
+    sda: GPIO4
+    scl: GPIO5
+    scan: true
+
+pcf8574:
+  - id: i2c_relay03
+    address: 0x27
+    pcf8575: false
+    i2c_id: bus_a
+
+switch:
+  - platform: gpio
+    name: "i2c_relay03_sw00"
+    id: i2c_relay03_sw00
+    pin:
+      pcf8574: i2c_relay03
+      number: 4
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio
+    name: "i2c_relay03_sw01"
+    id: i2c_relay03_sw01
+    pin:
+      pcf8574: i2c_relay03
+      number: 5
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio
+    name: "i2c_relay03_sw02"
+    id: i2c_relay03_sw02
+    pin:
+      pcf8574: i2c_relay03
+      number: 6
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio
+    name: "i2c_relay03_sw03"
+    id: i2c_relay03_sw03
+    pin:
+      pcf8574: i2c_relay03
+      number: 7
+      mode:
+        output: true
+    inverted: true
+    
+    
+binary_sensor:
+  - platform: gpio
+    name: "bin_sens_20"
+    id: bin_sens_20
+    pin:
+      number: 12
+      mode:
+        input: true
+        pullup: true
+      inverted: False
+    device_class: light
+    on_state:
+      then:
+       - switch.toggle: i2c_relay03_sw00
+
+  - platform: gpio
+    name: "bin_sens_21"
+    id: bin_sens_21
+    pin:
+      number: 13
+      mode:
+        input: true
+        pullup: true
+      inverted: False
+    device_class: light
+    on_state:
+      then:
+       - switch.toggle: i2c_relay03_sw01
+
+  - platform: gpio
+    name: "bin_sens_22"
+    id: bin_sens_22
+    pin:
+      number: 14
+      mode:
+        input: true
+        pullup: true
+      inverted: False
+    device_class: light
+    on_state:
+      then:
+       - switch.toggle: i2c_relay03_sw02

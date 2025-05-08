@@ -1,0 +1,267 @@
+substitutions:           # Windfang 
+  device_name: esp-02
+
+esphome:
+  name: ${device_name}
+
+esp8266:
+  board: d1_mini
+
+logger:
+
+ota:
+  - platform: esphome
+    password: "ac82ec269672b46813c24e3d187c69df"
+
+api:
+  encryption:
+    key: "V/ewpz7wN2o1gnWkStonExdgBz54pTUXw56KRwpHvwI="
+  id: api_client
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "${device_name} Hotspot"
+    password: "HjfKiEOmFUGl"
+
+captive_portal:
+
+mqtt:
+  broker: 10.0.0.10
+  username: mqtt
+  password: mqtt
+  discovery: false
+
+
+button:
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false
+
+
+i2c:
+  - id: bus_a
+    sda: GPIO4
+    scl: GPIO5
+    scan: true
+
+mcp23017:
+  - id: i2c_expand05      #   Windfang
+    address: 0x20
+    i2c_id: bus_a
+
+
+sensor:
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${device_name}"
+    update_interval: 60s
+
+  - platform: dht
+    pin: GPIO2
+    temperature:
+      name: "Temp Windfang"
+      filters:
+       - offset: 0.6
+    humidity:
+      name: "Humidity Windfang"
+      filters:
+       - offset: 0
+    model: dht22
+    update_interval: 50s
+
+  - platform: dht
+    pin: GPIO14
+    temperature:
+      name: "Temp Eingang EG"
+      filters:
+       - offset: 0
+    humidity:
+      name: "Humidity Eingang EG"
+      filters:
+       - offset: 0
+    model: dht22
+    update_interval: 50s
+
+  - platform: dht
+    pin: GPIO0
+    temperature:
+      name: "Temp Bad"
+      filters:
+       - offset: 0.5
+    humidity:
+      name: "Humidity Bad"
+      filters:
+       - offset: 6
+    model: dht22
+    update_interval: 50s
+
+
+binary_sensor:
+
+  - platform: gpio
+    name: "bin_sens_40"
+    id: bin_sens_40
+    pin:
+      mcp23xxx: i2c_expand05
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+         - mqtt.publish:
+             topic: "esp32-02/switch/i2c_relay05_sw10/command"
+             payload: "TOGGLE" 
+
+  - platform: gpio
+    name: "bin_sens_41"
+    id: bin_sens_41
+    pin:
+      mcp23xxx: i2c_expand05
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: false
+    device_class: light
+    on_state:
+      - mqtt.publish:
+          topic: "esp32-02/switch/i2c_relay05_sw11/command"
+          payload: "TOGGLE"    
+
+
+  - platform: gpio
+    name: "bin_sens_42"
+    id: bin_sens_42
+    pin:
+      mcp23xxx: i2c_expand05
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_press:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script01"
+            payload: "pressed01"
+    on_release:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script01"
+            payload: "released01"
+
+  - platform: gpio
+    name: "bin_sens_43"
+    id: bin_sens_43
+    pin:
+      mcp23xxx: i2c_expand05
+      number: 3
+      mode:
+        input: true
+        pullup: true
+      inverted: false
+    device_class: light
+    on_state:
+         - mqtt.publish:
+             topic: "esp32-02/switch/i2c_relay05_sw11/command"
+             payload: "TOGGLE" 
+
+  - platform: gpio
+    name: "bin_sens_44"
+    id: bin_sens_44
+    pin:
+      mcp23xxx: i2c_expand05
+      number: 4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at least 0.5s
+      then:
+        - mqtt.publish:
+            topic: "esp32-02/switch/i2c_relay05_sw09/command"
+            payload: "TOGGLE" 
+    - timing:
+        - ON for 0.4s to 0.8s
+        - OFF for at least 0.5s
+      then:
+        - homeassistant.service:
+            service: homeassistant.turn_on
+            data:
+              entity_id: media_player.nad_bad
+        - delay: 1s
+        - homeassistant.service:
+            service: media_player.play_media
+            data:
+              entity_id: media_player.nad_bad
+              media_content_id: "http://10.0.0.57:8082/rock_flac"
+              media_content_type: "music"
+    - timing:
+        - ON for 0.8s to 1.6s
+        - OFF for at least 0.5s
+      then:
+        - homeassistant.service:
+            service: homeassistant.turn_on
+            data:
+              entity_id: media_player.nad_bad
+        - delay: 1s
+        - homeassistant.service:
+            service: media_player.play_media
+            data:
+              entity_id: media_player.nad_bad
+              media_content_id: "http://10.0.0.57:8083/main_flac"
+              media_content_type: "music"   
+
+  - platform: gpio
+    name: "bin_sens_45"
+    id: bin_sens_45
+    pin:
+      mcp23xxx: i2c_expand05
+      number: 5
+      mode:
+        input: true
+        pullup: true
+      inverted: false
+    device_class: light
+    on_state:
+      - mqtt.publish:
+          topic: "esp32-02/switch/i2c_relay05_sw10/command"
+          payload: "TOGGLE" 
+
+
+  - platform: gpio          # PIR Eingang EG
+    name: "pir03"
+    id: pir03
+    icon: mdi:motion-sensor
+    pin:
+      mcp23xxx: i2c_expand05
+      number: 6
+    device_class: motion
+    on_press:
+      then:
+        - mqtt.publish:
+            topic: "esp32-05/light/led_03/command"
+            payload: '{"state": "ON", "effect": "blink_05"}'
+#        - delay: 100ms
+#        - mqtt.publish:
+#            topic: "esp32-02/switch/i2c_relay05_sw11/command"
+#            payload: "ON"
+    on_release:
+      then:
+        - mqtt.publish:
+            topic: "esp32-05/light/led_03/command"
+            payload: '{"state": "OFF"}'
+#        - delay: 100ms
+#        - mqtt.publish:
+#            topic: "esp32-02/switch/i2c_relay05_sw11/command"
+#            payload: "OFF"

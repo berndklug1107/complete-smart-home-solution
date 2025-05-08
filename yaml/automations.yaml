@@ -1,0 +1,448 @@
+- id: '1696803473649'
+  alias: cover-close_default
+  description: cover-close_default
+  triggers:
+  - event: sunset
+    trigger: sun
+    offset: 00:20:00
+  conditions: []
+  actions:
+  - action: script.cover_close_default
+    data: {}
+  mode: single
+- id: '1696803541249'
+  alias: cover-open_winter
+  description: cover-open_winter
+  triggers:
+  - event: sunrise
+    offset: '- 00:35:00'
+    trigger: sun
+  conditions: []
+  actions:
+  - action: script.cover_open_winter
+    data: {}
+  mode: single
+- id: '1696803601549'
+  alias: player-wakeup_T758
+  description: ''
+  triggers:
+  - event: sunrise
+    offset: -00:30:00
+    trigger: sun
+  conditions: []
+  actions:
+  - action: media_player.select_source
+    data:
+      source: Rock Mix
+    target:
+      entity_id: media_player.t758
+    enabled: true
+  - data: {}
+    target:
+      entity_id: media_player.t758
+    action: media_player.media_play
+  - data:
+      volume_level: 0.21
+    action: media_player.volume_set
+    target:
+      entity_id: media_player.t758
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - data:
+      volume_level: 0.28
+    target:
+      entity_id: media_player.t758
+    action: media_player.volume_set
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - data:
+      volume_level: 0.34
+    target:
+      entity_id: media_player.t758
+    action: media_player.volume_set
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - data:
+      volume_level: 0.38
+    target:
+      entity_id: media_player.t758
+    action: media_player.volume_set
+  mode: single
+- id: '1696803670835'
+  alias: wz-play_metal01
+  description: ''
+  triggers:
+  - entity_id:
+    - input_select.play_wz
+    from:
+    to: Metal 01
+    trigger: state
+  conditions: []
+  actions:
+  - action: media_player.select_source
+    metadata: {}
+    data:
+      source: Metal 01
+    target:
+      entity_id: media_player.t758
+  mode: single
+- id: '1696812387030'
+  alias: wz-play_mix01
+  description: ''
+  triggers:
+  - entity_id:
+    - input_select.play_wz
+    from:
+    to: Mix 01
+    trigger: state
+  conditions: []
+  actions:
+  - action: media_player.select_source
+    metadata: {}
+    data:
+      source: Mix 01
+    target:
+      entity_id: media_player.t758
+  mode: single
+- id: '1698835976331'
+  alias: wz-play_rp-main
+  description: ''
+  triggers:
+  - entity_id:
+    - input_select.play_wz
+    from:
+    to: RP Main Mix
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+    trigger: state
+  conditions: []
+  actions:
+  - action: media_player.select_source
+    metadata: {}
+    data:
+      source: RP Main Mix
+    target:
+      entity_id: media_player.t758
+  mode: single
+- id: '1700322699769'
+  alias: wz-play_rp-rock
+  description: ''
+  triggers:
+  - entity_id:
+    - input_select.play_wz
+    from:
+    to: RP Rock Mix
+    trigger: state
+  conditions: []
+  actions:
+  - action: media_player.select_source
+    metadata: {}
+    data:
+      source: RP Rock Mix
+    target:
+      entity_id: media_player.t758
+  mode: single
+- id: '1708076474111'
+  alias: drive_enable
+  description: ''
+  triggers:
+  - entity_id:
+    - switch.heat_main
+    from: 'off'
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+    trigger: state
+  conditions: []
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.triac_eg
+    data: {}
+  - metadata: {}
+    data:
+      value: '100'
+    target:
+      entity_id: number.hk_og_bad
+    action: number.set_value
+  - metadata: {}
+    data:
+      value: '30'
+    target:
+      entity_id: number.hk_og_ost
+    action: number.set_value
+  - metadata: {}
+    data:
+      value: '50'
+    target:
+      entity_id: number.hk_og_mitte
+    action: number.set_value
+  - metadata: {}
+    data:
+      value: '100'
+    target:
+      entity_id: number.hk_eg_all
+    action: number.set_value
+  - metadata: {}
+    data:
+      value: '50'
+    action: number.set_value
+    target:
+      entity_id: number.hk_k_wc
+  - metadata: {}
+    data:
+      value: '100'
+    target:
+      entity_id:
+      - number.hk_k_vorraum
+    action: number.set_value
+  - metadata: {}
+    data:
+      value: '80'
+    target:
+      entity_id: number.hk_k_bad
+    action: number.set_value
+  - metadata: {}
+    data:
+      value: '50'
+    target:
+      entity_id: number.hk_k_wohnraum
+    action: number.set_value
+  - action: light.turn_on
+    target:
+      entity_id: light.led_01
+    data:
+      effect: blink_05
+  - action: switch.turn_on
+    target:
+      entity_id: switch.triac_keller_led_en
+    data: {}
+  - action: light.turn_on
+    data:
+      effect: blink_05
+    target:
+      entity_id: light.led_001
+  mode: single
+- id: '1708119217534'
+  alias: drive_disable
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - switch.heat_main
+    from: 'on'
+    to: 'off'
+  conditions: []
+  actions:
+  - delay:
+      hours: 0
+      minutes: 6
+      seconds: 0
+      milliseconds: 0
+  - metadata: {}
+    data:
+      value: '0'
+    target:
+      entity_id: number.hk_eg_all
+    action: number.set_value
+  - metadata: {}
+    data:
+      value: '0'
+    target:
+      entity_id:
+      - number.hk_og_all
+    action: number.set_value
+  - metadata: {}
+    data:
+      value: '0'
+    action: number.set_value
+    enabled: true
+    target:
+      entity_id: number.hk_k_all
+  - action: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.triac_eg
+  - action: light.turn_off
+    target:
+      entity_id: light.led_01
+    data: {}
+  - action: light.turn_off
+    target:
+      entity_id: light.led_001
+    data: {}
+  mode: single
+- id: '1709902697394'
+  alias: pir03 (Aussenlicht Eingang EG)
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.pir03
+    from:
+    to: 'on'
+  conditions:
+  - condition: sun
+    before: sunrise
+    after: sunset
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.i2c_relay05_sw11
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 3
+      seconds: 0
+      milliseconds: 0
+  - action: switch.turn_off
+    target:
+      entity_id: switch.i2c_relay05_sw11
+    data: {}
+  mode: single
+- id: '1711183986308'
+  alias: wz-play_rp-mellow
+  description: ''
+  triggers:
+  - entity_id:
+    - input_select.play_wz
+    from:
+    to: RP Mellow Mix
+    trigger: state
+  conditions: []
+  actions:
+  - action: media_player.select_source
+    metadata: {}
+    data:
+      source: RP Mellow Mix
+    target:
+      entity_id: media_player.t758
+  mode: single
+- id: '1726661234851'
+  alias: zero04_off
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.power_zero04
+    from: 'on'
+    to: 'off'
+  actions:
+  - action: shell_command.shutdown_zero04
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - action: switch.turn_off
+    target:
+      entity_id: switch.switch_a01
+    data: {}
+  mode: single
+- id: '1736686203955'
+  alias: pir01_on (Bodenspots EG OG)
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.pir01
+    from:
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  conditions:
+  - condition: sun
+    after: sunset
+    before: sunrise
+    after_offset: -01:00:00
+  actions:
+  - action: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.i2c_relay05_sw09
+  mode: single
+- id: '1736686264868'
+  alias: pir02_on (Bodenspots EG Keller)
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.pir02
+    from:
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  conditions:
+  - condition: sun
+    after: sunset
+    before: sunrise
+    after_offset: -01:00:00
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - switch.i2c_relay05_sw06
+      - switch.i2c_relay05_sw03
+  mode: single
+- id: '1740588083237'
+  alias: Heizung früh
+  description: ''
+  triggers:
+  - trigger: time
+    at: 04:00:00
+  conditions: []
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.heat_main
+    data: {}
+  mode: single
+- id: '1742672683706'
+  alias: zero04_on
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.power_zero04
+    from: 'off'
+    to: 'on'
+  conditions: []
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.switch_a01
+    data: {}
+  mode: single
+- id: '1742814355310'
+  alias: cover-open_all
+  description: cover-open_all
+  triggers:
+  - trigger: sun
+    event: sunrise
+    offset: -00:30:00
+  conditions: []
+  actions:
+  - action: script.cover_open_all_2
+    data: {}
+  mode: single
+

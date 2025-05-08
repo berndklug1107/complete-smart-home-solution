@@ -1,0 +1,1261 @@
+substitutions:
+  device_name: esp32-06
+
+esphome:
+  name: ${device_name}           #  OG HK Verteiler
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+   
+external_components:
+  - source:
+      type: local
+      path: custom_components
+
+logger:
+
+api:
+  encryption:
+    key: "bGuamnlqbeGGXyGGZr6EibRj2ABg4iBQXTPIBBPhEo0="
+
+ota:
+  - platform: esphome
+    password: "ba2ceffbcd9cb0dc88fda99e9c22f54f"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "${device_name} Hotspot"
+    password: "V9Zyt6E9PsZ1"
+
+captive_portal:
+
+mqtt:
+  broker: 10.0.0.10
+  username: mqtt
+  password: mqtt
+  discovery: false
+
+i2c:
+  - id: bus_a
+    sda: GPIO21
+    scl: GPIO22
+    scan: true
+
+one_wire:
+  - platform: gpio
+    pin: GPIO19
+    id: hub_01
+
+
+pcf8574:
+  - id: i2c_relay01   # ost
+    address: 0x27
+    pcf8575: false
+    i2c_id: bus_a
+
+  - id: i2c_relay02   # vorraum / bad / mitte
+    address: 0x26
+    pcf8575: false
+    i2c_id: bus_a
+
+mcp23017:
+  - id: i2c_expand01  # OG Ost
+    address: 0x20
+    i2c_id: bus_a
+
+  - id: i2c_expand02  # OG Mitte
+    address: 0x21
+    i2c_id: bus_a
+
+  - id: i2c_expand00   # OG Vorraum / Bad
+    address: 0x22
+    i2c_id: bus_a
+
+power_supply:
+  - id: i2c_relay02_sw00               # Dimmer Bad
+    keep_on_time: 0.2s
+    pin:
+      pcf8574: i2c_relay02
+      number: 0
+      inverted: true
+
+button:
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false
+
+
+light:
+  - platform: monochromatic           # Dimmer Bad
+    id: light00
+    icon: mdi:light-recessed
+    name: "light00"
+    output: dimmer_20
+
+switch:
+
+  #     ost
+
+  - platform: gpio                    # Steckdose
+    name: "i2c_relay01_sw03"
+    id: i2c_relay01_sw03
+    icon: mdi:power
+    pin:
+      pcf8574: i2c_relay01
+      number: 7
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                    # Deckenspots groß
+    name: "i2c_relay01_sw01"
+    id: i2c_relay01_sw01
+    icon: mdi:light-recessed
+    pin:
+      pcf8574: i2c_relay01
+      number: 6
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                  # Deckenspots klein
+    name: "i2c_relay01_sw00"
+    id: i2c_relay01_sw00
+    icon: mdi:light-recessed
+    pin:
+      pcf8574: i2c_relay01
+      number: 5
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                  # OG Ost Balkon
+    name: "i2c_relay01_sw02"
+    id: i2c_relay01_sw02
+    icon: mdi:outdoor-lamp
+    pin:
+      pcf8574: i2c_relay01
+      number: 4
+      mode:
+        output: true
+    inverted: true
+
+
+#     vorraum / bad / mitte
+
+  - platform: gpio                    # Bad Bodenspots
+    name: "i2c_relay02_sw01"
+    id: i2c_relay02_sw01
+    icon: mdi:light-flood-down
+    pin:
+      pcf8574: i2c_relay02
+      number: 5
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                    # Wandlicht OG Vorraum
+    name: "i2c_relay02_sw02"
+    id: i2c_relay02_sw02
+    icon: mdi:wall-sconce-round-variant-outline
+    pin:
+      pcf8574: i2c_relay02
+      number: 6
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                    # Bad Steckdose
+    name: "i2c_relay02_sw03"
+    id: i2c_relay02_sw03
+    icon: mdi:power
+    pin:
+      pcf8574: i2c_relay02
+      number: 7
+      mode:
+        output: true
+    inverted: true
+
+            #   mitte
+
+  - platform: gpio                    # OG Mitte Deckenspots
+    name: "i2c_relay02_sw04"
+    id: i2c_relay02_sw04
+    icon: mdi:light-recessed
+    pin:
+      pcf8574: i2c_relay02
+      number: 4
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                   # OG Mitte Balkon
+    name: "i2c_relay02_sw05"
+    id: i2c_relay02_sw05
+    icon: mdi:outdoor-lamp
+    pin:
+      pcf8574: i2c_relay02
+      number: 3
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                  # OG Mitte Schranklicht
+    name: "i2c_relay02_sw06"
+    id: i2c_relay02_sw06
+    icon: mdi:light-recessed
+    pin:
+      pcf8574: i2c_relay02
+      number: 2
+      mode:
+        output: true
+    inverted: true
+
+  - platform: gpio                  # frei
+    name: "i2c_relay02_sw07"
+    id: i2c_relay02_sw07
+    pin:
+      pcf8574: i2c_relay02
+      number: 1
+      mode:
+        output: true
+    inverted: true
+
+
+output:
+  - platform: i2c_dimmer
+    address: 0x10
+    id: dimmer_20
+    power_supply: i2c_relay02_sw00
+    min_power: 0.1
+    max_power: 0.95
+
+  - platform: slow_pwm
+    id: ch01
+    pin: GPIO13
+    period: 60s
+    zero_means_zero: True
+    min_power: 0.1
+    max_power: 0.6
+
+  - platform: slow_pwm
+    id: ch02
+    pin: GPIO14
+    period: 60s
+    zero_means_zero: True
+    min_power: 0.1
+    max_power: 0.6
+
+  - platform: slow_pwm
+    id: ch03
+    pin: GPIO27
+    period: 60s
+    zero_means_zero: True
+    min_power: 0.1
+    max_power: 0.6
+
+  - platform: slow_pwm
+    id: ch04
+    pin: GPIO26
+    period: 60s
+    zero_means_zero: True
+    min_power: 0.1
+    max_power: 0.6
+
+  - platform: slow_pwm
+    id: ch05
+    pin: GPIO25
+    period: 60s
+    zero_means_zero: True
+    min_power: 0.1
+    max_power: 0.6
+
+  - platform: slow_pwm
+    id: ch06
+    pin: GPIO33
+    period: 60s
+    zero_means_zero: True
+    min_power: 0.1
+    max_power: 0.6
+
+  - platform: slow_pwm
+    id: ch07
+    pin: GPIO32
+    period: 60s
+    zero_means_zero: True
+    min_power: 0.1
+    max_power: 0.6
+
+  - platform: slow_pwm
+    id: ch08
+    pin: GPIO23
+    period: 60s
+    zero_means_zero: True
+    min_power: 0.1
+    max_power: 0.6
+
+
+binary_sensor:
+
+#   P I R
+
+  - platform: gpio
+    name: "pir01"
+    id: pir01
+    pin: GPIO16
+    icon: mdi:motion-sensor
+    device_class: motion
+
+
+#   Schalter OG ost
+
+  - platform: gpio              # OG Vorraum Tür ost unten rechts (S)
+    name: "bin_sens_01"
+    id: bin_sens_01
+    pin:
+      mcp23xxx: i2c_expand01
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      - mqtt.publish:
+          topic: "esp32-02/switch/i2c_relay05_sw09/command"
+          payload: "TOGGLE"
+
+  - platform: gpio             # OG Vorraum Tür ost unten links (T)
+    name: "bin_sens_02"
+    id: bin_sens_02
+    pin:
+      mcp23xxx: i2c_expand01
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_press:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script01"
+            payload: "pressed01"
+    on_release:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script01"
+            payload: "released01"
+
+  - platform: gpio              # OG Vorraum Tür ost oben (T)
+    name: "bin_sens_03"
+    id: bin_sens_03
+    pin:
+      mcp23xxx: i2c_expand01
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.4s
+      then:
+        - switch.toggle: i2c_relay02_sw02        
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at least 0.4s        
+      then:
+        - homeassistant.service:
+             service: cover.stop_cover
+             data:
+               entity_id: cover.rollo_og_ost
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.open_cover
+             data:
+               entity_id: cover.rollo_og_ost
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.8s to 1.4s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.close_cover
+             data:
+               entity_id: cover.rollo_og_ost
+
+  - platform: gpio          # OG ost Balkon
+    name: "bin_sens_04"
+    id: bin_sens_04
+    pin:
+      mcp23xxx: i2c_expand01
+      number: 3
+      mode:
+        input: true
+        pullup: true
+      inverted: false
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay01_sw02
+
+  - platform: gpio          # OG ost rechts (S)
+    name: "bin_sens_05"
+    id: bin_sens_05
+    pin:
+      mcp23xxx: i2c_expand01
+      number: 4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay01_sw01
+
+  - platform: gpio          # OG ost links (S)
+    name: "bin_sens_06"
+    id: bin_sens_06
+    pin:
+      mcp23xxx: i2c_expand01
+      number: 5
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay01_sw00
+
+
+            #   OG Vorraum / Bad
+
+  - platform: gpio            # OG Bad unten (T)
+    name: "bin_sens_07"
+    id: bin_sens_07
+    pin:
+      mcp23xxx: i2c_expand00
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at least 0.4s
+      then:
+        - switch.toggle: i2c_relay02_sw01
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at least 0.4s        
+      then:
+        - homeassistant.service:
+             service: cover.stop_cover
+             data:
+               entity_id: cover.rollo_bad
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.open_cover
+             data:
+               entity_id: cover.rollo_bad
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.8s to 1.4s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.close_cover
+             data:
+               entity_id: cover.rollo_bad
+
+  - platform: gpio              # OG Bad oben ((T)
+    name: "bin_sens_08"
+    id: bin_sens_08
+    pin:
+      mcp23xxx: i2c_expand00
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+
+    - timing:      
+        - ON for at most 0.3s
+        - OFF for at least 0.4s        
+      then:
+        - if:
+            condition:
+              light.is_off: light00
+            then:
+              light.turn_on: 
+                id: light00
+                brightness: 0.5
+            else:
+              light.turn_off: light00
+
+    - timing:
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+            service: media_player.play_media
+            data:
+              entity_id: media_player.nad_bad
+              media_content_id: "http://10.0.0.57:8082/rock_flac"
+              media_content_type: "music"
+
+    - timing:
+        - ON for 0.8s to 1.4s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+            service: media_player.play_media
+            data:
+              entity_id: media_player.nad_bad
+              media_content_id: "http://10.0.0.57:8083/main_flac"
+              media_content_type: "music"
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at least 0.4s
+      then:
+         - homeassistant.service:
+              service: media_player.media_play_pause
+              data:
+                entity_id: media_player.nad_bad
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+            service: media_player.play_media
+            data:
+              entity_id: media_player.nad_bad
+              media_content_id: "http://10.0.0.57:8084/mellow_flac"
+              media_content_type: "music"
+
+    on_press:
+      then:
+      - if:
+          condition: 
+            light.is_off: light00
+          then:
+          - delay: 1.5s
+          - while:
+              condition:
+                binary_sensor.is_on: bin_sens_08
+              then:
+                - light.dim_relative:
+                    id: light00
+                    relative_brightness: 3%
+                    transition_length: 0.2s
+                - delay: 0.1s
+          else:
+          - delay: 1.5s
+          - while:
+              condition:
+                and:
+                  - binary_sensor.is_on: bin_sens_08
+                  - light.is_on: light00
+              then:
+                - light.dim_relative:
+                    id: light00
+                    relative_brightness: -3%
+                    transition_length: 0.2s
+                - delay: 0.1s
+
+  - platform: gpio              # OG Vorraum Tür mitte unten rechts (T)
+    name: "bin_sens_09"
+    id: bin_sens_09
+    pin:
+      mcp23xxx: i2c_expand00
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_press:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script01"
+            payload: "pressed01"
+    on_release:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script01"
+            payload: "released01"
+    on_multi_click:
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at least 0.4s        
+      then:
+        - homeassistant.service:
+             service: cover.stop_cover
+             data:
+               entity_id: cover.rollo_og_mitte
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.open_cover
+             data:
+               entity_id: cover.rollo_og_mitte
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.8s to 1.4s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.close_cover
+             data:
+               entity_id: cover.rollo_og_mitte
+
+  - platform: gpio          # OG Vorraum Tür mitte oben (S)
+    name: "bin_sens_10"
+    id: bin_sens_10
+    pin:
+      mcp23xxx: i2c_expand00
+      number: 3
+      mode:
+        input: true
+        pullup: true
+      inverted: false
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay02_sw02
+
+  - platform: gpio          # OG Vorraum Tür mitte unten links (T)
+    name: "bin_sens_11"
+    id: bin_sens_11
+    pin:
+      mcp23xxx: i2c_expand00
+      number: 4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at least 0.4s
+      then:
+      - mqtt.publish:
+          topic: "esp32-02/switch/i2c_relay05_sw09/command"
+          payload: "TOGGLE"    
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at least 0.4s        
+      then:
+        - homeassistant.service:
+             service: cover.stop_cover
+             data:
+               entity_id: cover.rollo_og_west
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.open_cover
+             data:
+               entity_id: cover.rollo_og_west
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.8s to 1.4s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.close_cover
+             data:
+               entity_id: cover.rollo_og_west
+
+
+
+#                 Schalter OG Mitte
+
+  - platform: gpio            # OG mitte Tür rechts (S)
+    name: "bin_sens_12"
+    id: bin_sens_12
+    pin:
+      mcp23xxx: i2c_expand02
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay02_sw06
+  
+  - platform: gpio            # OG mitte Tür links (S)
+    name: "bin_sens_13"
+    id: bin_sens_13
+    pin:
+      mcp23xxx: i2c_expand02
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay02_sw04
+
+  - platform: gpio            # OG mitte Bett R L (S)
+    name: "bin_sens_14"
+    id: bin_sens_14
+    pin:
+      mcp23xxx: i2c_expand02
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay02_sw04
+
+  - platform: gpio            # OG mitte Bett R R (S)
+    name: "bin_sens_15"
+    id: bin_sens_15
+    pin:
+      mcp23xxx: i2c_expand02
+      number: 3
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay02_sw06
+
+  - platform: gpio            # OG mitte Bett L L (S)
+    name: "bin_sens_16"
+    id: bin_sens_16
+    pin:
+      mcp23xxx: i2c_expand02
+      number: 4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay02_sw06
+
+  - platform: gpio            # OG mitte Bett L R (S)
+    name: "bin_sens_17"
+    id: bin_sens_17
+    pin:
+      mcp23xxx: i2c_expand02
+      number: 5
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay02_sw04
+
+  - platform: gpio            # OG mitte Balkon (S)
+    name: "bin_sens_18"
+    id: bin_sens_18
+    pin:
+      mcp23xxx: i2c_expand02
+      number: 6
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: light
+    on_state:
+      then:
+      - switch.toggle: i2c_relay02_sw05
+
+
+sensor:
+
+#       R a u m s e n s o r e n     #
+
+  - platform: dht
+    pin: GPIO17
+    temperature:
+      name: "Temp OG Vorraum"
+      filters:
+       - offset: -0.2      
+    humidity:
+      name: "Humidity OG Vorraum"
+      filters:
+       - offset: 4
+    model: dht22
+    update_interval: 50s
+
+  - platform: dht
+    model: dht22
+    pin: GPIO18
+    temperature:
+      name: "Temp OG Ost"
+      filters:
+       - offset: 0.2
+    humidity:
+      name: "Humidity OG Ost"
+      filters:
+       - offset: -3
+    update_interval: 50s
+
+  - platform: dht
+    model: dht22
+    pin: GPIO4
+    temperature:
+      name: "Temp OG Mitte"
+      filters:
+       - offset: -0.3
+    humidity:
+      name: "Humidity OG Mitte"
+    update_interval: 50s
+
+  - platform: dht
+    model: dht22
+    pin: GPIO15
+    temperature:
+      name: "Temp OG Stiege"
+      filters:
+        - offset: -0.1
+    humidity:
+      name: "Humidity OG Stiege"
+    update_interval: 50s
+
+
+  #         Temperatur H E I Z K R E I S E   O G 
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0xa421987f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "OG VL"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0x776c087e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "OG RL"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0xc8fd307f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name:  "hk_OG-Bad01_VL"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0xb854077f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_OG-Bad01"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0x41b15c710e64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_OG-Bad02"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0x9dc437b00164ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_OG-West01"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0xed0a057f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_OG-West02"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0x2517b37f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_OG-Mitte01 VL"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0xb2650ab70164ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_OG-Mitte01"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0x31e10db70164ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_OG-Mitte02"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0xd65a9e7f0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_OG-Ost01"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0x9ed7747e0f64ff28
+    resolution: 12
+    accuracy_decimals: 2
+    name: "hk_OG-Ost02"
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${device_name}"
+    update_interval: 60s
+
+
+servo:
+      # bad_01
+  - id: drive_01
+    output: ch01
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+      # bad_02
+  - id: drive_02
+    output: ch02
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+      # west_01
+  - id: drive_03
+    output: ch03
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+      # west_02
+  - id: drive_04
+    output: ch04
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+      # mitte_01
+  - id: drive_05
+    output: ch05
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+      # mitte_02
+  - id: drive_06
+    output: ch06
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+      # ost_01
+  - id: drive_07
+    output: ch07
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+      # ost_02
+  - id: drive_08
+    output: ch08
+    min_level: 0
+    max_level: 1
+    idle_level: 0
+    restore: true
+
+
+number:
+
+  - platform: template
+    name: "hk_og_bad01"
+    icon: "mdi:pipe-valve"
+    id: og_bad01
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_01
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_bad02"
+    icon: "mdi:pipe-valve"
+    id: og_bad02
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_02
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_west01"
+    icon: "mdi:pipe-valve"
+    id: og_west01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_03
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_west02"
+    icon: "mdi:pipe-valve"
+    id: og_west02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_04
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_mitte01"
+    icon: "mdi:pipe-valve"
+    id: og_mitte01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_05
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_mitte02"
+    icon: "mdi:pipe-valve"
+    id: og_mitte02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_06
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_ost01"
+    icon: "mdi:pipe-valve"
+    id: og_ost01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_07
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_ost02"
+    icon: "mdi:pipe-valve"
+    id: og_ost02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    set_action:
+      then:
+        - servo.write:
+            id: drive_08
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_og_bad"
+    icon: "mdi:pipe-valve"
+    id: og_bad
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+        - number.set:
+            id: og_bad01
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_bad02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_og_west"
+    icon: "mdi:pipe-valve"
+    id: og_west
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+        - number.set:
+            id: og_west01
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_west02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_og_mitte"
+    icon: "mdi:pipe-valve"
+    id: og_mitte
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+        - number.set:
+            id: og_mitte01
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_mitte02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_og_ost"
+    icon: "mdi:pipe-valve"
+    id: og_ost
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 50s
+    set_action:
+        - number.set:
+            id: og_ost01
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_ost02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_og_all"
+    icon: "mdi:pipe-valve"
+    id: og_all
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+#    update_interval: 20s
+    set_action:
+   # on_value:
+      then:
+        - number.set:
+            id: og_bad
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_west
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_mitte
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_ost
+            value: !lambda 'return x;'

@@ -1,0 +1,189 @@
+mqtt:
+  enabled: false
+  host: 10.0.0.10
+  topic_prefix: frigate
+  client_id: frigate
+  user: mqtt
+  password: mqtt
+
+ffmpeg:
+  hwaccel_args: preset-rpi-64-h264
+
+detectors:
+  coral:
+    type: edgetpu
+    device: usb
+
+logger:
+  default: debug
+
+#go2rtc:
+#  streams:
+#    zero03-stream:
+#      - rtsp://10.0.0.30:554/zero03/realmonitor?channel=1&subtype=2
+#    zero04-stream:
+#      - rtsp://10.0.0.31:554/zero04/realmonitor?channel=1&subtype=2
+
+
+timestamp_style:
+  position: tr
+  effect: solid
+
+birdseye:
+  enabled: true
+  restream: true
+  width: 1024
+  height: 768
+  quality: 8
+  mode: objects
+
+objects:
+  track:
+    - person
+    - dog
+
+record:
+  enabled: true
+  retain:
+    days: 3
+    mode: motion
+  alerts:
+    retain:
+      days: 5
+    pre_capture: 5
+    post_capture: 5
+  detections:
+    retain:
+      days: 5
+    pre_capture: 5
+    post_capture: 5
+
+review:
+  alerts:
+    labels:
+      - person
+      - dog
+  detections:
+    labels:
+      - person
+      - dog
+
+snapshots:
+  enabled: true
+  timestamp: true
+  retain:
+    default: 5
+
+
+cameras:
+
+  zero04:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://10.0.0.31:8554/zero04
+          roles:
+            - detect
+            - record
+    zones:
+      z01_zero04:
+        coordinates: 0.125,0.728,0.138,0.101,0.596,0.097,0.587,0.891
+        inertia: 3
+        loitering_time: 0
+    objects:
+      mask: 0.026,0.125,0.605,0.074,0.587,0.882,0.163,0.819
+    detect:
+      enabled: true
+    record:
+      enabled: true
+    motion:
+      enabled: true
+      mask: 0.062,0.202,0.596,0.079,0.594,0.756,0.107,0.657
+      threshold: 20
+      contour_area: 10
+      improve_contrast: true
+    review:
+      alerts:
+        required_zones: z01_zero04
+      detections:
+        required_zones: z01_zero04
+
+  zero01:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://10.0.0.85:8554/zero01
+          roles:
+            - detect
+            - record
+    zones:
+      z01_zero01:
+        coordinates: 0.046,0.956,0.013,0.389,0.985,0.309,1,0.507
+        inertia: 3
+        loitering_time: 0
+#        objects: person
+    objects:
+      mask: 0.014,0.396,0.986,0.314,0.992,0.958,0.015,0.983
+    detect:
+      enabled: true
+    record:
+      enabled: true
+    motion:
+      enabled: true
+      threshold: 20
+      contour_area: 10
+      mask: 0.01,0.392,0.113,0.971,0.986,0.575,0.982,0.306
+      improve_contrast: true
+    review:
+      alerts:
+        required_zones: z01_zero01
+      detections:
+        required_zones: z01_zero01
+    onvif:
+      host: 10.0.0.85
+      port: 8081
+      user: pi
+      password: pi
+
+  zero03:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://10.0.0.30:8554/zero03
+          roles:
+            - detect
+            - record
+    zones:
+      z01_zero03:
+        coordinates: 0.017,0.479,0.01,0.229,0.997,0.312,0.993,0.655
+        inertia: 3
+        loitering_time: 0
+#        objects: person
+    objects:
+      mask: 0.017,0.241,1,0.314,0.992,0.68,0.016,0.48
+    detect:
+      enabled: true
+    record:
+      enabled: true
+    motion:
+      enabled: true
+      threshold: 20
+      contour_area: 10
+      mask: 0.001,0.238,0.001,0.459,0.995,0.612,0.992,0.355
+      improve_contrast: true
+    review:
+      alerts:
+        required_zones: z01_zero03
+      detections:
+        required_zones: z01_zero03
+    onvif:
+      host: 10.0.0.30
+      port: 8081
+      user: pi
+      password: pi
+
+version: 0.15-1
+semantic_search:
+  enabled: true
+  reindex: false
+  model_size: small

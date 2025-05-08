@@ -1,0 +1,10 @@
+{
+  "name": "i2c_dimmer",
+  "output": {
+    "address": {
+      "type": "int",
+      "required": true,
+      "description": "I2C-Adresse des Dimmers (z.B. 0x10)."
+    }
+  }
+}

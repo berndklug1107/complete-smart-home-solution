@@ -1,0 +1,1 @@
+https://github.com/alainstark/esphome/tree/dev/esphome/components/ds248x

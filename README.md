@@ -42,8 +42,8 @@ For individual room control, according to the number of rooms that are handled b
 In order to get a really accurate solution I also suggest to install temp-sensors on each return-water-pipe, covered all around with some kind of thermal insulation (the blue covers around the water-pipe on the images are from security pads of a trampoline), so you can see definitely whats really happening in the pipe. The sensor itself I fixed with cable ties. Every 4th flow-water circuit I also installed a sensor. DS18B20 are ideal sensors for that purpose, with OneWire-I2C board DS2482-800 you get 8 OneWire-channels, so at least 80 sensors possible (with good wiring:-)
 The heating valves are handled by wax engines “Möhlenhoff Alpha-5” which in turn are controlled by the triacs. They are defined as servos which use the slow_pwm output platform of esphome. Servos get value from a template. Additionally in dashboard you can use sliders to set the open state of each valve.
 I use these triac boards (both high quality products available at tindie.com): 
-	1 “ESP32 Floor Heating Valve Controller” (Voltlog) → esp32-01
-	3 “8CH AC LED Light Dimmer Module Controller Board” (Krida) → esp32-04, esp32-06
+- 1 x “ESP32 Floor Heating Valve Controller” (Voltlog) → esp32-01
+- 3 x “8CH AC LED Light Dimmer Module Controller Board” (Krida) → esp32-04, esp32-06
 	(images → heating control)
 
 

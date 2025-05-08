@@ -25,7 +25,7 @@ The big goal of binary_sensors is the capability to handle more or less all avai
 
 
 further requirements:
-#
+
 _- underfloor heating system with individual room control_
 
 Heating system, fed by 30 underfloor heating circuits, should be controlled manually in Home Assistant App (e.g. with automations, sliders, etc), with binary_sensors or automatically by thermostat (like Versatile Thermostat or the simple hassio thermostat card) with Triacs, so you can set a various number of open states between 0 – 1, not only open/close. This makes handling especially with underfloor heating much easier and in case of 30 circuits the switching noise takes little get used to.
@@ -37,7 +37,7 @@ I use these triac boards (both high quality products available at tindie.com):
 	1 “ESP32 Floor Heating Valve Controller” (Voltlog) → esp32-01
 	3 “8CH AC LED Light Dimmer Module Controller Board” (Krida) → esp32-04, esp32-06
 	(images → heating control)
-#
+
 _- media handling (NVR surveillance system, media streaming, media hosting, file server)_
 
 raspberry pi5 (pi402) is a data and media server with a 512GB SD card and Google coral TPU for 

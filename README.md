@@ -4,13 +4,13 @@ This project covers a complete (Home Assistant) smart home solution for single f
 
 -  41 power circuits (mostly light, also power outlets, garage door opener, ventilator, heating system) with “4/8/16 Channel I2C Electromagnetic Relay Modules” from Krida Electronics. 8 light circuits can be dimmed. Therefore I use I2C mosfet Trailing Edge AC Dimmer from Krida. In case of dimming the relays work as power supplies for the dimmer (as you see in yaml files). There is no custom component or other integration for this dimmer in esphome or hassio. You find the software under components/i2c_dimmer. Dimming either by the amount of time pressing the associated momentary switch or by hassio app. As the dimming process control takes place on the esp where dimmer is connected to the binary_sensors on other esp use a central dimming script (dimm_script0x) which is activated by mqtt payloads “pressed” and “released” to access the monochromatic_light on dimmer espx. Generally communication for light switching among the esps works with mqtt (since mqtt has native support for toggle, turn_on, press ..), you can also use esphome-API. In my case one light circuit contains from 2 to 8 light bulbs, sometimes spread over big area, then these 8 dimming AC lines produce electrical noise which can influence the binary_sensors.
 
-- 21 covers/blinders: 13 from Selve, 8 from Warema. For Selve you need the Selve RF-USB gateway (866 MHz) which will be plugged into your hassio server usb port (there are also other variants). Integration you find on github or HACS. For warema you need the 433 Mhz RF-Link Gateway and find it on www.nodo-shop.nl. Apart from Warema you can use more or less every 433MHz device  (except garage-door opener) with that gateway, even sensors like TFA Dostmann climate sensors. Hassio integration available. The tubular motors of covers in operation also cause terrible electrical interference. Use interference filters or 100nF caps as close as possible to the AC connection of motor.
+- 21 covers/blinders: 13 from Selve, 8 from Warema. For Selve you need the Selve RF-USB gateway (866 MHz) which will be plugged into your hassio server usb port (there are also other variants). Integration you find on github or HACS. For warema you need the 433 Mhz RF-Link Gateway and find it on nodo-shop.nl. Apart from Warema you can use more or less every 433MHz device  (except garage-door opener) with that gateway, even sensors like TFA Dostmann climate sensors. Hassio integration available. The tubular motors of covers in operation also cause terrible electrical interference. Use interference filters or 100nF caps as close as possible to the AC connection of motor.
 
 - 4 media player: 2 NAD C338, 1 NAD T758, 1 Pioneer LX304. Hassio integrations (BluOS, Google Chromecast or DLNA renderer) available, best results with BluOS devices which also  support playlists out of Home Assistant, and more features like media_next_track (e.g. from esphome)
 
 - 1 garage door opener: esphome button with id: garage_tor on esp32-02 will be pressed for 0.3s which opens/closes the garage door. This button uses GPIO output platform switching i2c-relay05/pin0. As the door is opened the reed relay (image → reed01, reed02) mounted on garage door will be closed and indicates this state in kitchen using the state LED with id: led_02 on esp32-05.
 
-#
+
 Due to several, unavoidable electrical interference the big challenge is the wiring of binary_sensors (=existing light/momentary switches), relay-boards, sensors (in my case 18 DHT22, 56 DS18B20 (for heating system), PIR ...
 binary_sensors are connected to I2C I/O expansion boards MCP23017 which offer 16 in/outputs, 
 I2C Relay-boards use PCF8574/75 for I2C communication, both connected to I2c master (=esp32).
@@ -20,12 +20,13 @@ bin_sens.txt gives overview of binary_sensor connection and location, relays.txt
 Anyway, the delayed_on_off function in esphome should be used, you never know which kind of engines or interferences the AC lines in your house/flat are exposed to.
 You will need some knowledge base about wiring, good tools (soldering iron, solder) and a very clean, accurate work style. Don’t use cheap junk from china, you will regret it.
 The big goal of binary_sensors is the capability to handle more or less all available entities in your home. In /yaml you find the config-files of all esp devices (esp01 - esp04, esp32-01 - esp32-06, esp05 is dsmr to get smartmeter data, energy consumption). With one binary_sensor you can handle at least 8 operations, good example is bin_sens_85 on esp32-05: 3 operations for blinder handling, 2 operations for light control and dimming, 2 operations for streaming service on media_player.nad_kueche (Radio Paradise Main and Rock). Since flac streaming from radioparadise.com breaks after 4-5 min I need to re-transcode the stream and offer it again in my lan with stream_rp_main.h which gets started by stream_rp_main.service on  This stream is used on esp32-05 and works perfect. bin_sens_70 shows the way how to open garage from outside (modified:-))
+
 #
 
 
 further requirements:
 #
-- underfloor heating system with individual room control
+_- underfloor heating system with individual room control_
 
 Heating system, fed by 30 underfloor heating circuits, should be controlled manually in Home Assistant App (e.g. with automations, sliders, etc), with binary_sensors or automatically by thermostat (like Versatile Thermostat or the simple hassio thermostat card) with Triacs, so you can set a various number of open states between 0 – 1, not only open/close. This makes handling especially with underfloor heating much easier and in case of 30 circuits the switching noise takes little get used to.
 After heating action the triacs should be turned off automatically and, of course, turned on when starting – not only because of energy reason but much more of security. Don’t touch triac boards during operation! The main heat switch is triggered by an Electromagnetic Relay (switch.heat_main) instead of the old thermostat, then the automation “drive_enable” will be triggered and sets the defined value of open-state of valves. If the relay turns main_heat off the automation drive_disable is triggered and sets all values to 0 and finally a second relay (switch.triac_eg) breaks AC lines to the triac boards. When using thermostat function everything works automatically.
@@ -36,8 +37,8 @@ I use these triac boards (both high quality products available at tindie.com):
 	1 “ESP32 Floor Heating Valve Controller” (Voltlog) → esp32-01
 	3 “8CH AC LED Light Dimmer Module Controller Board” (Krida) → esp32-04, esp32-06
 	(images → heating control)
-
-- media handling (NVR surveillance system, media streaming, media hosting, file server)
+#
+_- media handling (NVR surveillance system, media streaming, media hosting, file server)_
 
 raspberry pi5 (pi402) is a data and media server with a 512GB SD card and Google coral TPU for 
 

@@ -41,7 +41,7 @@ bin_sens_44 EG Vorraum Stiege OG unten rechts (T)    i2c_expand05		pin 4
 bin_sens_45 EG Vorraum Stiege mitte (S)              i2c_expand05		pin 5
 pir03 PIR EG Eingang                                 i2c_expand05		pin 6
 
-pir02 PIR Keller                                     i2c_expand07   pin 0
+pir02 PIR Keller                                     i2c_expand07     pin 0
 bin_sens_49 Vorraum Keller WC                        i2c_expand07		pin 1
 bin_sens_50 Vorraum Keller Tür Bad R (T)             i2c_expand07		pin 2
 bin_sens_51 Vorraum Keller Tür Bad L (T)             i2c_expand07		pin 3
@@ -60,7 +60,7 @@ bin_sens_64 Vorraum K Tür WR R (T)                   i2c_expand06		pin 4
 bin_sens_65 Vorraum K Tür WR L (T)                   i2c_expand06		pin 5
 bin_sens_66 WR K Tür unten (T)                       i2c_expand06		pin 6
 
-pir05 PIR Garage                                    i2c_expand08    pin 0
+pir05 PIR Garage                                    i2c_expand08      pin 0
 gtor_state Status Garagentor                        i2c_expand08		pin 1
 bin_sens_70 Garage Tür (T)                          i2c_expand08		pin 2
 bin_sens_71 Garage Tür (S)                          i2c_expand08		pin 3

@@ -20,12 +20,12 @@ bin_sens.txt gives overview of binary_sensor connection and location, relays.txt
 Anyway, the delayed_on_off function in esphome should be used, you never know which kind of engines or interferences the AC lines in your house/flat are exposed to.
 You will need some knowledge base about wiring, good tools (soldering iron, solder) and a very clean, accurate work style. Don’t use cheap junk from china, you will regret it.
 The big goal of binary_sensors is the capability to handle more or less all available entities in your home. In /yaml you find the config-files of all esp devices (esp01 - esp04, esp32-01 - esp32-06, esp05 is dsmr to get smartmeter data, energy consumption). With one binary_sensor you can handle at least 8 operations, good example is bin_sens_85 on esp32-05: 3 operations for blinder handling, 2 operations for light control and dimming, 2 operations for streaming service on media_player.nad_kueche (Radio Paradise Main and Rock). Since flac streaming from radioparadise.com breaks after 4-5 min I need to re-transcode the stream and offer it again in my lan with stream_rp_main.h which gets started by stream_rp_main.service on  This stream is used on esp32-05 and works perfect. bin_sens_70 shows the way how to open garage from outside (modified:-))
-
+#
 
 
 further requirements:
-
-underfloor heating system with individual room control
+#
+- underfloor heating system with individual room control
 
 Heating system, fed by 30 underfloor heating circuits, should be controlled manually in Home Assistant App (e.g. with automations, sliders, etc), with binary_sensors or automatically by thermostat (like Versatile Thermostat or the simple hassio thermostat card) with Triacs, so you can set a various number of open states between 0 – 1, not only open/close. This makes handling especially with underfloor heating much easier and in case of 30 circuits the switching noise takes little get used to.
 After heating action the triacs should be turned off automatically and, of course, turned on when starting – not only because of energy reason but much more of security. Don’t touch triac boards during operation! The main heat switch is triggered by an Electromagnetic Relay (switch.heat_main) instead of the old thermostat, then the automation “drive_enable” will be triggered and sets the defined value of open-state of valves. If the relay turns main_heat off the automation drive_disable is triggered and sets all values to 0 and finally a second relay (switch.triac_eg) breaks AC lines to the triac boards. When using thermostat function everything works automatically.
@@ -37,7 +37,7 @@ I use these triac boards (both high quality products available at tindie.com):
 	3 “8CH AC LED Light Dimmer Module Controller Board” (Krida) → esp32-04, esp32-06
 	(images → heating control)
 
-media handling (NVR surveillance system, media streaming, media hosting, file server)
+- media handling (NVR surveillance system, media streaming, media hosting, file server)
 
 raspberry pi5 (pi402) is a data and media server with a 512GB SD card and Google coral TPU for 
 

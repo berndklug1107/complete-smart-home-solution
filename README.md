@@ -3,7 +3,7 @@ This project covers a complete (Home Assistant) smart home solution for single f
 
 #
 ![esp32-02_02](https://github.com/user-attachments/assets/468ebcf7-a131-4bcf-a22b-907f2c339e6a)
-     _16-channel i2c-relay-board, i2c mosfet dimmer, MCP23017, esp32UE, XL4015, APV-35_
+     _16-channel i2c-relay-board, 2 pcs i2c mosfet dimmer, MCP23017, esp32UE, XL4015, APV-35_
 #
 
 _- 41 power circuits_ (mostly light, also power outlets, garage door opener, ventilator, heating system) with “4/8/16 Channel I2C Electromagnetic Relay Modules” from Krida Electronics. 8 light circuits can be dimmed. Therefore I use I2C mosfet Trailing Edge AC Dimmer from Krida. In case of dimming the relays work as power supplies for the dimmer (as you see in yaml files). There is no custom component or other integration for this dimmer in esphome or hassio. You find the software under components/i2c_dimmer. Dimming by the amount of time pressing the associated momentary switch or by hassio app. As the dimming process control takes place on the esp where dimmer is connected to the binary_sensors on other esp use a central dimming script (dimm_script0x) which is activated by mqtt payloads “pressed” and “released” to access the monochromatic_light on dimmer espx. Generally communication for light switching among the esps works with mqtt (since mqtt has native support for toggle, turn_on, press ..), you can also use esphome-API. In my case one light circuit contains from 2 to 8 light bulbs, sometimes spread over big area, then these 8 dimming AC lines produce electrical noise which can influence the binary_sensors.

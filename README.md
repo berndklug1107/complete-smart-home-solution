@@ -1,10 +1,10 @@
 # The complete smart home solution for single family houses and apartment buildings
 This project covers a complete (Home Assistant) smart home solution for single family houses and apartment buildings facing the primarily requirement of replacing the existing high voltage switching system by an I2C-binary sensor system using the 70 existing controlling units (like light switches, momentary switches, ..) in order to control:
 
+#
 ![esp32-02_02](https://github.com/user-attachments/assets/468ebcf7-a131-4bcf-a22b-907f2c339e6a)
-
-
-
+# 16-channel i2c-relay-board, i2c mosfet dimmer, MCP23017, esp32UE, XL4015, APV-35
+#
 
 _- 41 power circuits_ (mostly light, also power outlets, garage door opener, ventilator, heating system) with “4/8/16 Channel I2C Electromagnetic Relay Modules” from Krida Electronics. 8 light circuits can be dimmed. Therefore I use I2C mosfet Trailing Edge AC Dimmer from Krida. In case of dimming the relays work as power supplies for the dimmer (as you see in yaml files). There is no custom component or other integration for this dimmer in esphome or hassio. You find the software under components/i2c_dimmer. Dimming by the amount of time pressing the associated momentary switch or by hassio app. As the dimming process control takes place on the esp where dimmer is connected to the binary_sensors on other esp use a central dimming script (dimm_script0x) which is activated by mqtt payloads “pressed” and “released” to access the monochromatic_light on dimmer espx. Generally communication for light switching among the esps works with mqtt (since mqtt has native support for toggle, turn_on, press ..), you can also use esphome-API. In my case one light circuit contains from 2 to 8 light bulbs, sometimes spread over big area, then these 8 dimming AC lines produce electrical noise which can influence the binary_sensors.
 
@@ -41,8 +41,7 @@ After heating action the triacs should be turned off automatically and, of cours
 For individual room control, according to the number of rooms that are handled by heating system same number of temperature sensors needs to be installed, each in one room, they are the predominantly basis for the temp-control. I suggest DHT22 sensors. You can also use AHT20 sensors with i2c interface, but their i2c-address (0x38) cannot be changed.
 
 In order to get a really accurate solution I also suggest to install temp-sensors on each return-water-pipe, covered all around with some kind of thermal insulation (the blue covers around the water-pipe on the images are from security pads of a trampoline), so you can see definitely whats really happening in the pipe. The sensor itself I fixed with cable ties. Every 4th flow-water circuit I also installed a sensor. DS18B20 are ideal sensors for that purpose, with OneWire-I2C board DS2482-800 you get 8 OneWire-channels, so at least 80 sensors possible (with good wiring)
-The heating valves are handled by wax engines “Möhlenhoff Alpha-5” which in turn are controlled by the triacs. They are defined as servos which use the slow_pwm output platform of esphome. Servos get value from a template. Additionally in dashboard you can use sliders to set the open state of each valve.
-I use these triac boards (both high quality products available at tindie.com):
+The heating valves are handled by wax engines “Möhlenhoff Alpha-5” which in turn are controlled by the triacs. They are defined as servos which use the slow_pwm output platform of esphome. Servos get value from a template, which can also be a group of several servos (e.g. one room, one floor). Additionally in dashboard you can use sliders to set the open state of each valve or valve group. I use these triac boards (both high quality products available on tindie.com):
 
 - 1 x “ESP32 Floor Heating Valve Controller” (Voltlog) → esp32-01
 - 3 x “8CH AC LED Light Dimmer Module Controller Board” (Krida) → esp32-04, esp32-06

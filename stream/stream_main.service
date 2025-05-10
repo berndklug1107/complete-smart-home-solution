@@ -8,7 +8,7 @@ User=pi
 Group=pi
 WorkingDirectory=/home/pi
 ExecStartPre=/bin/sleep 5
-ExecStart=/bin/bash /usr/local/bin/stream_main.h --logfile /home/pi/stream_mellow.log
+ExecStart=/bin/bash /usr/local/bin/stream_main.h --logfile /home/pi/stream_main.log
 Restart=on-failure
 Environment=DISPLAY=:0
 Environment=XDG_RUNTIME_DIR=/run/user/1000

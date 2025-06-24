@@ -2,7 +2,7 @@
 This project covers a complete (Home Assistant) smart home solution for single family houses and apartment buildings facing the primarily requirement of replacing the existing high voltage switching system by an I2C-binary sensor system using the 70 existing controlling units (like light switches, momentary switches, ..) in order to control:
 
 #
-![esp32-02_02](https://github.com/user-attachments/assets/468ebcf7-a131-4bcf-a22b-907f2c339e6a)
+
      _16-channel i2c-relay-board, 2 pcs i2c mosfet dimmer, MCP23017, esp32UE, XL4015, APV-35_
 #
 

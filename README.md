@@ -3,6 +3,7 @@ This project covers a complete (Home Assistant) smart home solution for single f
 
 #
 ![esp32-02_01](https://github.com/user-attachments/assets/2283985e-407a-440e-9fcb-cba7f36b82cb)
+![ts0](https://github.com/user-attachments/assets/08b83758-ebcb-4cf2-9139-2beb756c11f6)
 
      _16 and 8 channel i2c-relay-board, 2 pcs i2c mosfet dimmer, MCP23017, esp32UE, XL4015, APV-35_
 #

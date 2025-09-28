@@ -60,11 +60,11 @@ For individual room control, according to the number of rooms that are handled b
 
 _- media handling (NVR surveillance system, media streaming, media hosting, file server)_
 
-raspberry pi5 is a data and media server with a 512GB SD card and Google coral TPU mounted in wall with Waveshare 10.1" DSI display for 
+raspberry pi5 is a data and media server with 16GB RAM / 512GB SD card and Google coral TPU mounted in wall with Waveshare 10.1" DSI display for 
 
 - hosting audio data (ogg, flac, wav tracks) with Gerbera DLNA media server
 - NFS file server
-- Frigate NVR surveillance system with IMX219 pan-tilt-hat control cameras on pi zero2
-- Plasma Desktop
+- Frigate NVR surveillance system with IMX519 pan-tilt-hat control cameras on pi zero2
+- Plasma/Wayland Desktop
 
-Since Frigate - runs in docker mode - is an ONVIF compliant Real Time Object Detection NVR software I decided to use the rpos ONVIF server (github) together with mediamtx (github) in order to turn the arducam IMX219 on a raspberry zero2 with pan-tilt-hat into an ONVIF cam, so pan-tilt-hat control works also in frigate. For rpos you need debian 11 (bullseye). Images sc01, sc02 and sc03 show waterproof outdoorcam with two IMX519, one fixed, the other pan-tilt. As already mentioned in the rpos-repo the waveshare pan-tilt-hat needs mechanical modifications because only few parts fit, some parts are too long … so the Pimoroni model is recommended. Often surveillance cams are installed on exposed areas with poor wlan connectivity, therefor use external antenna on pi zero2. Online you find instructions on how to solder an ipex antenna connector on the pi board and break the connections to build-in antenna.
+Since Frigate - runs in docker mode - is an ONVIF compliant Real Time Object Detection NVR software I decided to use the rpos ONVIF server (github) together with mediamtx (github) in order to turn the arducam IMX219 on a raspberry zero2 with pan-tilt-hat into an ONVIF cam, so pan-tilt-hat control works also in frigate. For rpos you need debian 11 (bullseye). Images (cam) show waterproof outdoorcam with two IMX519, one fixed, the other pan-tilt, the waveshare 10.1" DSI display and how to mount in wall. As already mentioned in the rpos-repo the waveshare pan-tilt-hat needs mechanical modifications because only few parts fit, some parts are too long … so the Pimoroni model is recommended. Often surveillance cams are installed on exposed areas with poor wlan connectivity, therefor use external antenna on pi zero2. Online you find instructions on how to solder an ipex antenna connector on the pi board and break the connections to build-in antenna.

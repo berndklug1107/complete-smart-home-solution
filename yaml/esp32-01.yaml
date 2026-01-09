@@ -13,11 +13,11 @@ logger:
 
 api:
   encryption:
-    key: "nIs9PiHB5lvynoyHQxdcIAtCKgwTpEntF7+0F4P/H2k="
+    key:
 
 ota:
  - platform: esphome
-   password: "71c7b4a6919a2b867c0b7d8fb69a9023"
+   password: 
 
 wifi:
   ssid: !secret wifi_ssid
@@ -51,19 +51,6 @@ sensor:
       name: "Humidity GZ"
       filters:
         - offset: 10
-    update_interval: 50s
-
-  - platform: dht
-    pin: GPIO4
-    model: DHT22
-    temperature:
-      name: "Temp WZ"
-      filters:
-       - offset: 0.5
-    humidity:
-      name: "Humidity WZ"
-      filters:
-       - offset: 8
     update_interval: 50s
 
 switch:           # Relay 	11
@@ -121,7 +108,7 @@ output:
    period: 50s
    zero_means_zero: true
    min_power: 0.1
-   max_power: 0.6
+   max_power: 0.4
 
                       # hk_k_bad_03
  - platform: slow_pwm
@@ -139,7 +126,7 @@ output:
    period: 50s
    zero_means_zero: true
    min_power: 0.1
-   max_power: 0.6
+   max_power: 0.5
 
                       # hk_k_bad_01
  - platform: slow_pwm
@@ -178,96 +165,20 @@ output:
    max_power: 0.6
 
 
-servo:
-
-      # hk_k_wohnraum_02
-  - id: drive_01
-    output: ch01
-    min_level: 0
-    max_level: 0.7
-    idle_level: 0
-    restore: true
-
-      # hk_k_wohnraum_03
-  - id: drive_02
-    output: ch02
-    min_level: 0
-    max_level: 0.7
-    idle_level: 0
-    restore: true
-
-      # hk_k_wohnraum_01
-  - id: drive_03
-    output: ch03
-    min_level: 0
-    max_level: 0.7
-    idle_level: 0
-    restore: true
-
-      # hk_k_bad_03
-  - id: drive_04
-    output: ch04
-    min_level: 0
-    max_level: 0.7
-    idle_level: 0
-    restore: true
-
-      # hk_k_bad_02
-  - id: drive_05
-    output: ch05
-    min_level: 0
-    max_level: 0.7
-    idle_level: 0
-    restore: true
-
-      # hk_k_bad_01
-  - id: drive_06
-    output: ch06
-    min_level: 0
-    max_level: 0.7
-    idle_level: 0
-    restore: true
-
-      # hk_k_wc
-  - id: drive_07
-    output: ch07
-    min_level: 0
-    max_level: 0.7
-    idle_level: 0
-    restore: true
-
-      # hk_k_vorraum_02
-  - id: drive_08
-    output: ch08
-    min_level: 0
-    max_level: 0.7
-    idle_level: 0
-    restore: true
-
-      # hk_k_vorraum_01
-  - id: drive_09
-    output: ch09
-    min_level: 0
-    max_level: 0.7
-    idle_level: 0
-    restore: true
-
-
 number:
 
   - platform: template
     name: "hk_k_bad_01"
-    icon: mdi:pipe-valve
     id: hk_k_bad_01
     min_value: 0
     max_value: 100
     step: 1
+    restore_value: true
     optimistic: true
-    # update_interval: 50s
     set_action:
       then:
-        - servo.write:
-            id: drive_06
+        - output.set_level:
+            id: ch06
             level: !lambda 'return x / 100.0;'
 
   - platform: template
@@ -277,12 +188,12 @@ number:
     min_value: 0
     max_value: 100
     step: 1
+    restore_value: true
     optimistic: true
-    # update_interval: 50s
     set_action:
       then:
-        - servo.write:
-            id: drive_05
+        - output.set_level:
+            id: ch05
             level: !lambda 'return x / 100.0;'
 
   - platform: template
@@ -293,11 +204,11 @@ number:
     max_value: 100
     step: 1
     optimistic: true
-    # update_interval: 50s
+    restore_value: true
     set_action:
       then:
-        - servo.write:
-            id: drive_04
+        - output.set_level:
+            id: ch04
             level: !lambda 'return x / 100.0;'
 
   - platform: template
@@ -308,11 +219,11 @@ number:
     max_value: 100
     step: 1
     optimistic: true
-    # update_interval: 50s
+    restore_value: true
     set_action:
       then:
-        - servo.write:
-            id: drive_03
+        - output.set_level:
+            id: ch03
             level: !lambda 'return x / 100.0;'
 
   - platform: template
@@ -323,12 +234,12 @@ number:
     max_value: 100
     step: 1
     mode: slider
+    restore_value: true
     optimistic: true
-    # update_interval: 50s
     set_action:
       then:
-        - servo.write:
-            id: drive_01
+        - output.set_level:
+            id: ch01
             level: !lambda 'return x / 100.0;'
 
   - platform: template
@@ -340,11 +251,11 @@ number:
     step: 1
     mode: slider
     optimistic: true
-    # update_interval: 50s
+    restore_value: true
     set_action:
       then:
-        - servo.write:
-            id: drive_02
+        - output.set_level:
+            id: ch02
             level: !lambda 'return x / 100.0;'
   
   - platform: template
@@ -354,12 +265,12 @@ number:
     min_value: 0
     max_value: 100
     step: 1
+    restore_value: true
     optimistic: true
-    # update_interval: 50s
     set_action:
       then:
-        - servo.write:
-            id: drive_09
+        - output.set_level:
+            id: ch09
             level: !lambda 'return x / 100.0;'
 
   - platform: template
@@ -370,11 +281,11 @@ number:
     max_value: 100
     step: 1
     optimistic: true
-    # update_interval: 50s
+    restore_value: true
     set_action:
       then:
-        - servo.write:
-            id: drive_08
+        - output.set_level:
+            id: ch08
             level: !lambda 'return x / 100.0;'
 
   - platform: template
@@ -384,12 +295,12 @@ number:
     min_value: 0
     max_value: 100
     step: 1
+    restore_value: true
     optimistic: true
-    # update_interval: 50s
     set_action:
       then:
-        - servo.write:
-            id: drive_07
+        - output.set_level:
+            id: ch07
             level: !lambda 'return x / 100.0;'
 
 
@@ -401,7 +312,7 @@ number:
     max_value: 100
     step: 1
     optimistic: true
-    # update_interval: 50s
+    restore_value: true
     set_action:
       then:
         - number.set:
@@ -423,7 +334,7 @@ number:
     step: 1
     mode: slider
     optimistic: true
-    # update_interval: 50s
+    restore_value: true
     set_action:
       then:
         - number.set:
@@ -444,7 +355,7 @@ number:
     max_value: 100
     step: 1
     optimistic: true
-    # update_interval: 50s
+    restore_value: true
     set_action:
       then:
         - number.set:
@@ -463,7 +374,7 @@ number:
     step: 1
     mode: slider
     optimistic: true
-    # update_interval: 50s
+    restore_value: true
     set_action:
       then:
         - number.set:
@@ -478,4 +389,3 @@ number:
         - number.set:
             id: hk_k_wc
             value: !lambda 'return x;'
-

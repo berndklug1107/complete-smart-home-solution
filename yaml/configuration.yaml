@@ -9,15 +9,29 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 
 rflink:
-   port: /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+  port: /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+#  wait_for_ack: false
 
-media_player:
-  - platform: vlc
-    name: VLC Kueche
-    arguments: '--rc-host=10.0.0.57:4212'
-  - platform: vlc
-    name: VLC Bad
-    arguments: '--rc-host=10.0.0.57:4213'
+# light:
+#  - platform: rflink
+#    automatic_add: false
+    
+sensor:
+  - platform: rflink
+    devices:
+      prologue_9010_hum:
+        sensor_type: humidity      
+        name: hum_tfa01
+      prologue_9010_temp:
+        sensor_type: temperature
+        name: temp_tfa01
+      prologue_9020_hum:
+        sensor_type: humidity      
+        name: hum_tfa02
+      prologue_9020_temp:
+        sensor_type: temperature
+        name: temp_tfa02
+    automatic_add: false
 
 switch:
   - platform: rflink
@@ -26,10 +40,140 @@ switch:
          name: switch_a01
        kaku_000041_2:
          name: switch_a02
+       kaku_000041_3:
+         name: switch_a03
+       kaku_000041_4:
+         name: switch_a04
+       kaku_000042_1:
+         name: switch_b01
+       kaku_000042_2:
+         name: switch_b02
+         
+   #    ev1527_093200_01:
+   #      name: ev01
+     #  ev1527_093200_02:
+   #      name: ev02
+   #    ev1527_093200_04:
+    #     name: ev03
+   #    ev1527_093200_08:
+    #     name: ev04
     automatic_add: false
 
+mqtt:
+  sensor:
+    - name: "Lux Terrasse"
+      state_topic: "cam03/sensor/lux"
+      device_class: illuminance
+      unit_of_measurement: "lx"
+
+    - name: "Temp Terrasse"
+      state_topic: "cam03/sensor/temp_out"
+      device_class: temperature
+      unit_of_measurement: "°C"
+
+    - name: "Humidity Terrasse"
+      state_topic: "cam03/sensor/humidity"
+      device_class: humidity
+      unit_of_measurement: "%"
+
+command_line:
+  - sensor:
+        name: CPU_temp401
+        command: cat /sys/class/thermal/thermal_zone0/temp
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float / 1000) }}"
+        scan_interval: 60        
+  - sensor:
+        name: CPU_temp501
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float) }}"
+        scan_interval: 60
+  - sensor:
+        name: CPU_tempzero01
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.85 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float) }}"
+        scan_interval: 60
+  - sensor:
+        name: CPU_tempzero02
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.77 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float) }}"
+        scan_interval: 60        
+  - sensor:
+        name: CPU_tempzero03
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float) }}"
+        scan_interval: 60
+  - sensor:
+        name: CPU_tempzero05
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.69 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float) }}"
+        scan_interval: 60
+  - sensor:
+        name: CPU_tempzero06
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.79 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float) }}"
+        scan_interval: 60
+        
+  - sensor:
+        name: cam01_temp
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.85 "LC_ALL=C awk -F't=' '/t=/ {printf(\"%.3f\\n\", \$2/1000)}' /sys/bus/w1/devices/28-5ad8c5356461/w1_slave"
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float) }}"
+        scan_interval: 60
+
+  - sensor:
+        name: cam03_temp
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 "LC_ALL=C awk -F't=' '/t=/ {printf(\"%.3f\\n\", \$2/1000)}' /sys/bus/w1/devices/28-d0e0c5356461/w1_slave"
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float) }}"
+        scan_interval: 60
+
+  - sensor:
+        name: touch_temp
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 "LC_ALL=C awk -F't=' '/t=/ {printf(\"%.3f\\n\", \$2/1000)}' /sys/bus/w1/devices/28-a6d3c5356461/w1_slave"
+        unit_of_measurement: '°C'
+        device_class: temperature
+        value_template: "{{ '%.2f' | format(value | float) }}"
+        scan_interval: 60
+
+
 shell_command:
-  shutdown_zero04: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.31 sudo shutdown now"
+
+    frigate_stop: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 docker stop frigate"
+    frigate_restart: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 docker restart frigate"
+
+    down_pi501: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 sudo shutdown now"
+    reboot_pi501: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 sudo reboot now"
+    re_mtx: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 sudo systemctl restart mediamtx"
+    stop_mtx: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 sudo systemctl stop mediamtx"
+    
+    down_zero01: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.85 sudo shutdown now"
+    down_zero02: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.77 sudo shutdown now"    
+    down_zero03: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 sudo shutdown now"
+    down_zero05: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.69 sudo shutdown now"
+    down_zero06: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.79 sudo shutdown now"
+    
+    
+    reboot_zero01: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.85 sudo reboot now"
+    reboot_zero02: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.77 sudo reboot now"    
+    reboot_zero03: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 sudo reboot now"
+    reboot_zero05: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.69 sudo reboot now"
+    reboot_zero06: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.79 sudo reboot now"     
 
 
 cover:
@@ -37,46 +181,49 @@ cover:
      devices:
        warema_408c_01:
         name: warema1
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_408c_02:
         name: warema2
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_408c_03:
         name: warema3
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_408c_04:
         name: warema4
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_a677_01:
         name: warema5
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_a677_02:
         name: warema6
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_a677_03:
         name: warema7
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_a677_04:
         name: warema8
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_a677_05:
         name: warema_wz
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_a677_06:
         name: warema_ez_k
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_a677_07:
         name: warema_front
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_408c_05:
         name: warema_k
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_408c_06:
         name: warema_ez
-        signal_repetitions: 3
+        signal_repetitions: 2
        warema_408c_07:
         name: warema_alle
-        signal_repetitions: 3
+        signal_repetitions: 2
 
 logger:
   default: error
+  #logs:
+  #  rflink: debug
+    #homeassistant.components.rflink: debug

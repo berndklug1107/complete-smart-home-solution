@@ -7,7 +7,7 @@ esphome:
 external_components:
   - source:
       type: local
-      path: custom_components
+      path: components
 
 esp32:
   board: esp32dev
@@ -18,11 +18,11 @@ logger:
 
 api:
   encryption:
-    key: "Njnl5o4iroRMgWr3YpytmvYSMqNbQfVUSqEf/k3GdoQ="
+    key: 
 
 ota:
   - platform: esphome
-    password: "04d5a78ac1d8844c7f3726c2a9446ad1"
+    password: 
 
 wifi:
   ssid: !secret wifi_ssid
@@ -36,7 +36,7 @@ captive_portal:
 
 
 mqtt:
-  broker: 10.0.0.10
+  broker: 10.0.0.21
   username: mqtt
   password: mqtt
   discovery: false
@@ -46,7 +46,10 @@ mqtt:
       payload: "pressed02"
       then:
         - lambda: id(dim_control02).publish_state(true);
-        - script.execute: dimm_script02
+        - script.execute:
+            id: dimm_script02
+            target_light: light02
+            trigger_binary: dim_control02
     - topic: "dimmer/dimm_script02"
       payload: "released02"
       then:
@@ -56,7 +59,10 @@ mqtt:
       payload: "pressed03"
       then:
         - lambda: id(dim_control03).publish_state(true);
-        - script.execute: dimm_script03
+        - script.execute:
+            id: dimm_script03
+            target_light: light03
+            trigger_binary: dim_control03
     - topic: "dimmer/dimm_script03"
       payload: "released03"
       then:
@@ -64,67 +70,66 @@ mqtt:
 
 script:
   - id: dimm_script02
+    parameters:
+      target_light: esphome::light::LightState*
+      trigger_binary: esphome::binary_sensor::BinarySensor*
     mode: restart
     then:
-      - if:
-          condition: 
-            light.is_off: light02
+      - delay: 0.8s 
+      - while:
+          condition:
+            lambda: return trigger_binary->state;
           then:
-          - delay: 1s
-          - while:
-              condition:
-                binary_sensor.is_on: dim_control02
-              then:
-                - light.dim_relative:
-                    id: light02
-                    relative_brightness: 3%
-                    transition_length: 0.2s
-                - delay: 0.1s
-          else:
-          - delay: 1s
-          - while:
-              condition:
-                and:
-                  - binary_sensor.is_on: dim_control02
-                  - light.is_on: light02
-              then:
-                - light.dim_relative:
-                    id: light02
-                    relative_brightness: -3%
-                    transition_length: 0.2s
-                - delay: 0.1s
+            - lambda: |-
+                if (target_light == nullptr || trigger_binary == nullptr) return;         
+                float current_b = target_light->remote_values.get_brightness();
+                static bool dim_up = true; 
+                if (current_b < 0.05f) dim_up = true;
+                else if (current_b > 0.95f) dim_up = false;
+
+                float step = dim_up ? 0.02f : -0.02f;
+                float new_brightness = current_b + step;
+                
+                if (new_brightness > 1.0f) new_brightness = 1.0f;
+                if (new_brightness < 0.01f) new_brightness = 0.01f;
+
+                auto call = target_light->make_call();
+                call.set_brightness(new_brightness);
+                call.set_state(true);
+                call.set_transition_length(100);
+                call.perform();
+            - delay: 0.1s
 
   - id: dimm_script03
+    parameters:
+      target_light: esphome::light::LightState*
+      trigger_binary: esphome::binary_sensor::BinarySensor*
     mode: restart
     then:
-      - if:
-          condition: 
-            light.is_off: light03
+      - delay: 0.8s 
+      - while:
+          condition:
+            lambda: return trigger_binary->state;
           then:
-          - delay: 1s
-          - while:
-              condition:
-                binary_sensor.is_on: dim_control03
-              then:
-                - light.dim_relative:
-                    id: light03
-                    relative_brightness: 3%
-                    transition_length: 0.2s
-                - delay: 0.2s
-          else:
-          - delay: 1s
-          - while:
-              condition:
-                and:
-                  - binary_sensor.is_on: dim_control03
-                  - light.is_on: light03
-              then:
-                - light.dim_relative:
-                    id: light03
-                    relative_brightness: -3%
-                    transition_length: 0.2s
-                - delay: 0.2s
+            - lambda: |-
+                if (target_light == nullptr || trigger_binary == nullptr) return;
+                float current_b = target_light->remote_values.get_brightness();
+                static bool dim_up = true; 
+                if (current_b < 0.05f) dim_up = true;
+                else if (current_b > 0.95f) dim_up = false;
 
+                float step = dim_up ? 0.02f : -0.02f;
+                float new_brightness = current_b + step;
+                
+                if (new_brightness > 1.0f) new_brightness = 1.0f;
+                if (new_brightness < 0.01f) new_brightness = 0.01f;
+
+                auto call = target_light->make_call();
+                call.set_brightness(new_brightness);
+                call.set_state(true);
+                call.set_transition_length(100);
+                call.perform();
+            - delay: 0.1s
 
 i2c:
   - id: bus_a
@@ -137,6 +142,13 @@ pcf8574:
     address: 0x27
     pcf8575: True
     i2c_id: bus_a
+
+  - id: i2c_relay04
+    address: 0x3B
+    pcf8575: false
+    i2c_id: bus_a
+
+
 
 mcp23017:
   - id: i2c_expand06
@@ -170,8 +182,8 @@ output:
     address: 0x11
     id: dimmer_output00
     power_supply: i2c_relay05_sw07
-    min_power: 0.11
-    max_power: 0.55
+    min_power: 0.25
+    max_power: 0.7
 
 # Dimmer Wohnraum Keller
   - platform: i2c_dimmer                 
@@ -185,29 +197,38 @@ output:
   - platform: gpio
     id: gt
     pin:
-      pcf8574: i2c_relay05
-      number: 0
+      pcf8574: i2c_relay04
+      number: 4
       mode:
          output: true
     inverted: true
 
+# Türöffner EG
+  - platform: gpio
+    id: do_01
+    pin:
+      pcf8574: i2c_relay04
+      number: 5
+      mode:
+         output: true
+    inverted: true
 
 light:
 # Dimmer Wandlicht Keller/Stiege
   - platform: monochromatic
     id: light02
     name: "light02"
+    gamma_correct: 2
     output: dimmer_output00
     icon: mdi:wall-sconce-round-variant-outline
 
-
+          
 # Dimmer Wohnraum Keller
   - platform: monochromatic
     id: light03
     name: "light03"
     output: dimmer_output01
     icon: mdi:chandelier
-
 
 button:
 
@@ -218,11 +239,28 @@ button:
   - platform: output
     name: "Garage Tor"
     id: garage_tor
-#    icon: mdi:gesture-tap-button
+    icon: mdi:gesture-tap-button
     output: gt
     duration: 300ms
 
+  - platform: output
+    name: "Door EG"
+    id: door_eg
+    icon: mdi:gesture-tap-button
+    output: do_01
+    duration: 3s
+
 switch:
+
+  - platform: gpio                  # Touchscreen EG
+    name: "power_touch_eg" 
+    id: power_touch_eg
+    pin:
+      pcf8574: i2c_relay04
+      number: 7
+      mode:
+         output: true
+    inverted: true
 
   - platform: gpio
     name: "i2c_relay05_sw01"          # Wandlicht Bad Keller
@@ -387,7 +425,7 @@ binary_sensor:
     internal: true
 
 
-  - platform: gpio
+  - platform: gpio            # Tür Eingang K oben
     name: "bin_sens_61"
     id: bin_sens_61
     pin:
@@ -399,42 +437,38 @@ binary_sensor:
       inverted: true
     device_class: light
     on_multi_click:
+
     - timing:
-        - ON for at most 0.5s
-        - OFF for at least 0.5s
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at least 0.5s        
       then:
       - switch.toggle: i2c_relay05_sw06
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+        - if:
+            condition:
+              light.is_off: light02
+            then:
+              light.turn_on: 
+                id: light02
+                brightness: 0.4
+            else:
+              light.turn_off: light02
+
     on_press:
       then:
-      - if:
-          condition: 
-            light.is_off: light02
-          then:
-          - delay: 1s
-          - while:
-              condition:
-                binary_sensor.is_on: bin_sens_61
-              then:
-                - light.dim_relative:
-                    id: light02
-                    relative_brightness: 3%
-                    transition_length: 0.2s
-                - delay: 0.2s
-          else:
-          - delay: 1s
-          - while:
-              condition:
-                and:
-                  - binary_sensor.is_on: bin_sens_61
-                  - light.is_on: light02
-              then:
-                - light.dim_relative:
-                    id: light02
-                    relative_brightness: -3%
-                    transition_length: 0.2s
-                - delay: 0.2s
+        - script.execute:
+            id: dimm_script02
+            target_light: light02
+            trigger_binary: bin_sens_61
+    
 
-  - platform: gpio
+  - platform: gpio           #   Tür Eingang K unten
     name: "bin_sens_62"
     id: bin_sens_62
     pin:
@@ -447,17 +481,17 @@ binary_sensor:
     device_class: light
     on_multi_click:
     - timing:
-        - ON for at most 0.5s
-        - OFF for at least 0.5s
+        - ON for at most 0.4s
+        - OFF for at least 0.6s
       then:
         - switch.toggle: i2c_relay05_sw11
     - timing:
-        - ON for 0.5s to 1s
-        - OFF for at least 0.2s
+        - ON for 0.4s to 1s
+        - OFF for at least 0.6s
       then:
         - switch.toggle: i2c_relay05_sw14
 
-  - platform: gpio
+  - platform: gpio                # WR K Tür oben
     name: "bin_sens_63"
     id: bin_sens_63
     pin:
@@ -468,37 +502,61 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
+    on_multi_click:
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at least 0.4s        
+      then:
+        - homeassistant.service:
+             service: cover.stop_cover
+             data:
+               entity_id: cover.rollo_keller
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.close_cover
+             data:
+               entity_id: cover.rollo_keller
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.8s to 1.4s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+             service: cover.open_cover
+             data:
+               entity_id: cover.rollo_keller
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+        - if:
+            condition:
+              light.is_off: light03
+            then:
+              light.turn_on: 
+                id: light03
+                brightness: 0.4
+            else:
+              light.turn_off: light03
+
     on_press:
       then:
-      - if:
-          condition: 
-            light.is_off: light03
-          then:
-          - delay: 0.5s
-          - while:
-              condition:
-                binary_sensor.is_on: bin_sens_63
-              then:
-                - light.dim_relative:
-                    id: light03
-                    relative_brightness: 3%
-                    transition_length: 0.2s
-                - delay: 0.2s
-          else:
-          - delay: 0.5s
-          - while:
-              condition:
-                and:
-                  - binary_sensor.is_on: bin_sens_63
-                  - light.is_on: light03
-              then:
-                - light.dim_relative:
-                    id: light03
-                    relative_brightness: -3%
-                    transition_length: 0.2s
-                - delay: 0.2s
+        - script.execute:
+            id: dimm_script03
+            target_light: light03
+            trigger_binary: bin_sens_63
 
-  - platform: gpio
+  - platform: gpio              # Vorraum K Tür WR R
     name: "bin_sens_64"
     id: bin_sens_64
     pin:
@@ -509,37 +567,30 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
+    on_multi_click:
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+        - if:
+            condition:
+              light.is_off: light02
+            then:
+              light.turn_on: 
+                id: light02
+                brightness: 0.4
+            else:
+              light.turn_off: light02
+
     on_press:
       then:
-      - if:
-          condition: 
-            light.is_off: light02
-          then:
-          - delay: 0.5s
-          - while:
-              condition:
-                binary_sensor.is_on: bin_sens_64
-              then:
-                - light.dim_relative:
-                    id: light02
-                    relative_brightness: 3%
-                    transition_length: 0.2s
-                - delay: 0.2s
-          else:
-          - delay: 0.5s
-          - while:
-              condition:
-                and:
-                  - binary_sensor.is_on: bin_sens_64
-                  - light.is_on: light02
-              then:
-                - light.dim_relative:
-                    id: light02
-                    relative_brightness: -3%
-                    transition_length: 0.2s
-                - delay: 0.2s
+        - script.execute:
+            id: dimm_script02
+            target_light: light02
+            trigger_binary: bin_sens_64
 
-  - platform: gpio
+  - platform: gpio            # Vorraum K Tür WR L
     name: "bin_sens_65"
     id: bin_sens_65
     pin:
@@ -553,7 +604,7 @@ binary_sensor:
     on_press:
         - switch.toggle: i2c_relay05_sw06
 
-  - platform: gpio
+  - platform: gpio            # WR K Tür unten
     name: "bin_sens_66"
     id: bin_sens_66
     pin:
@@ -566,31 +617,7 @@ binary_sensor:
     device_class: light
     on_multi_click:
     - timing:
-        - ON for at most 0.4s
-        - OFF for at least 0.4s
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
       then:
         - switch.toggle: i2c_relay05_sw01
-    - timing:
-        - ON for 0.4s to 1s
-        - OFF for at least 0.5s
-      then:
-        - homeassistant.service:
-            service: cover.open_cover
-            data:
-              entity_id: cover.rollo_keller
-    - timing:
-        - ON for 1s to 2s
-        - OFF for at least 0.5s
-      then:
-        - homeassistant.service:
-            service: cover.close_cover
-            data:
-              entity_id: cover.rollo_keller
-    - timing:
-        - ON for at most 0.4s
-        - OFF for at most 0.4s
-      then:
-        - homeassistant.service:
-            service: cover.stop_cover
-            data:
-              entity_id: cover.rollo_keller

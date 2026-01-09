@@ -1,20 +1,25 @@
 #pragma once
+
 #include "esphome/core/component.h"
 #include "esphome/components/output/float_output.h"
-#include "Wire.h"
+#include "esphome/components/i2c/i2c.h"
 
 namespace esphome {
 namespace i2c_dimmer {
 
-class I2CDimmer : public output::FloatOutput, public Component {
+class I2CDimmer : public output::FloatOutput, public i2c::I2CDevice, public Component {
  public:
-  I2CDimmer(uint8_t i2c_address) { this->address_ = i2c_address; }
+  void setup() override {
+    // Initialisierung, falls nötig
+  }
 
-  void setup() override;
-  void write_state(float state) override;
+  void write_state(float value) override {
+    // ESPHome liefert 0.0 bis 1.0 -> Umrechnung auf 0 bis 255
+    uint8_t val = (uint8_t) (value * 255);
+    this->write(&val, 1);
+  }
 
- protected:
-  uint8_t address_;
+  void dump_config() override;
 };
 
 }  // namespace i2c_dimmer

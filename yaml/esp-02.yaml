@@ -11,11 +11,11 @@ logger:
 
 ota:
   - platform: esphome
-    password: "ac82ec269672b46813c24e3d187c69df"
+    password: 
 
 api:
   encryption:
-    key: "V/ewpz7wN2o1gnWkStonExdgBz54pTUXw56KRwpHvwI="
+    key:
   id: api_client
 
 wifi:
@@ -29,7 +29,7 @@ wifi:
 captive_portal:
 
 mqtt:
-  broker: 10.0.0.10
+  broker: 10.0.0.21
   username: mqtt
   password: mqtt
   discovery: false
@@ -51,7 +51,6 @@ mcp23017:
   - id: i2c_expand05      #   Windfang
     address: 0x20
     i2c_id: bus_a
-
 
 sensor:
 
@@ -145,6 +144,16 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
+    on_multi_click:
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.4s
+      then:
+         - homeassistant.service:
+             service: light.toggle
+             data:
+               entity_id: light.light01
+     #          brightness: 40%
     on_press:
       then:
         - mqtt.publish:
@@ -185,42 +194,50 @@ binary_sensor:
     device_class: light
     on_multi_click:
     - timing:
-        - ON for at most 0.4s
-        - OFF for at least 0.5s
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
       then:
         - mqtt.publish:
             topic: "esp32-02/switch/i2c_relay05_sw09/command"
             payload: "TOGGLE" 
     - timing:
-        - ON for 0.4s to 0.8s
-        - OFF for at least 0.5s
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s
       then:
-        - homeassistant.service:
-            service: homeassistant.turn_on
-            data:
-              entity_id: media_player.nad_bad
-        - delay: 1s
         - homeassistant.service:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_bad
-              media_content_id: "http://10.0.0.57:8082/rock_flac"
+      #        media_content_id: media-source://dlna_dms/gerbera/:77
+              media_content_id: "http://10.0.0.85:8083/main_flac"  
               media_content_type: "music"
     - timing:
         - ON for 0.8s to 1.6s
-        - OFF for at least 0.5s
+        - OFF for at least 0.4s
       then:
-        - homeassistant.service:
-            service: homeassistant.turn_on
-            data:
-              entity_id: media_player.nad_bad
-        - delay: 1s
         - homeassistant.service:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_bad
-              media_content_id: "http://10.0.0.57:8083/main_flac"
+    #          media_content_id: media-source://dlna_dms/gerbera/:47
+              media_content_id: "http://10.0.0.85:8082/rock_flac"
               media_content_type: "music"   
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at most 0.4s
+        - ON for at most 0.3s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+            service: media_player.play_media
+            data:
+              entity_id: media_player.nad_bad
+        #      media_content_id: media-source://dlna_dms/gerbera/:62
+              media_content_id: "http://10.0.0.85:8084/mellow_flac"
+              media_content_type: "music"
 
   - platform: gpio
     name: "bin_sens_45"
@@ -238,6 +255,56 @@ binary_sensor:
           topic: "esp32-02/switch/i2c_relay05_sw10/command"
           payload: "TOGGLE" 
 
+  - platform: gpio
+    name: "bin_sens_46"
+    id: bin_sens_46
+    pin:
+      mcp23xxx: i2c_expand05
+      number: 7
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: door
+    on_multi_click:
+    - timing:
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at least 2.0s
+
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at least 2.0s
+        
+        - OFF for at most 0.4s
+        - ON for at least 2.0s
+        - OFF for at least 0.4s
+
+      then:
+        - mqtt.publish:
+            topic: "esp32-02/button/door_eg/command"
+            payload: "PRESS"
+
+    on_click:
+      min_length: 0.1s
+      max_length: 1.9s
+      then:
+        - delay: 2s
+        - if:
+            condition:
+              binary_sensor.is_on: bin_sens_46
+            then:
+              - logger.log: "Taste noch gedrückt - kein Klick"
+            else:
+              - homeassistant.service:
+                  service: script.turn_on
+                  data:
+                    entity_id: script.kueche_klingelton
+
+              
 
   - platform: gpio          # PIR Eingang EG
     name: "pir03"
@@ -247,20 +314,20 @@ binary_sensor:
       mcp23xxx: i2c_expand05
       number: 6
     device_class: motion
-    on_press:
-      then:
-        - mqtt.publish:
-            topic: "esp32-05/light/led_03/command"
-            payload: '{"state": "ON", "effect": "blink_05"}'
+#    on_press:
+  #    then:
+ #       - mqtt.publish:
+   #         topic: "esp32-05/light/led_03/command"
+     #       payload: '{"state": "ON", "effect": "blink_05"}'
 #        - delay: 100ms
 #        - mqtt.publish:
 #            topic: "esp32-02/switch/i2c_relay05_sw11/command"
 #            payload: "ON"
-    on_release:
-      then:
-        - mqtt.publish:
-            topic: "esp32-05/light/led_03/command"
-            payload: '{"state": "OFF"}'
+  #  on_release:
+  #    then:
+   #     - mqtt.publish:
+   #         topic: "esp32-05/light/led_03/command"
+   #         payload: '{"state": "OFF"}'
 #        - delay: 100ms
 #        - mqtt.publish:
 #            topic: "esp32-02/switch/i2c_relay05_sw11/command"

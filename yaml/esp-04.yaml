@@ -11,11 +11,11 @@ logger:
 
 api:
   encryption:
-    key: "B9zuGLr3fy/yRWXIRRF7XusPoaDtXJuXfJYEWB3GAms="
+    key: 
 
 ota:
   - platform: esphome
-    password: "49fc315bf5eacc2540fba43f6558679f"
+    password: 
 
 wifi:
   ssid: !secret wifi_ssid
@@ -28,7 +28,7 @@ wifi:
 captive_portal:
 
 mqtt:
-  broker: 10.0.0.10
+  broker: 10.0.0.21
   username: mqtt
   password: mqtt
   discovery: false
@@ -54,9 +54,8 @@ sensor:
     name: "WiFi Signal ${device_name}"
     update_interval: 60s
 
-  - platform: dht
-    pin: GPIO2
-    model: DHT22
+  - platform: aht10
+    variant: AHT20
     temperature:
       name: "Temp Garage"
       filters:
@@ -65,12 +64,12 @@ sensor:
       name: "Humidity Garage"
       filters:
        - offset: 0
-    update_interval: 50s
+    update_interval: 60s
 
 
 binary_sensor:
 
-  - platform: gpio
+  - platform: gpio                # Garage Tür
     name: "bin_sens_71"
     id: bin_sens_71
     pin:
@@ -82,8 +81,8 @@ binary_sensor:
     device_class: light
     on_multi_click:
     - timing:
-        - ON for at most 0.5s
-        - OFF for at least 0.2s
+        - ON for at most 0.4s
+        - OFF for at least 0.6s
       then:
         - mqtt.publish:
             topic: "esp32-02/switch/i2c_relay05_sw13/command"
@@ -91,12 +90,14 @@ binary_sensor:
     - timing:
         - ON for at most 0.4s
         - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at least 0.6s        
       then:
         - mqtt.publish:
             topic: "esp32-02/button/garage_tor/command"
             payload: "PRESS"
 
-  - platform: gpio
+  - platform: gpio          #  Keller Bad Tür Garage oben
     name: "bin_sens_72"
     id: bin_sens_72
     pin:
@@ -106,6 +107,18 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
+    on_multi_click:
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+         - homeassistant.service:
+             service: light.toggle
+             data:
+               entity_id: light.light03
+               brightness_pct: "40"
+                 
     on_press:
       then:
         - mqtt.publish:
@@ -117,7 +130,7 @@ binary_sensor:
             topic: "dimmer/dimm_script03"
             payload: "released03"
 
-  - platform: gpio
+  - platform: gpio          # Keller Bad Tür Garage unten
     name: "bin_sens_73"
     id: bin_sens_73
     pin:
@@ -193,35 +206,40 @@ binary_sensor:
     device_class: light
     on_multi_click:
     - timing:
-        - ON for at least 3s
-        - OFF for at most 0.3s
-        - ON for at least 2s
-        - OFF for at least 2s
-        - ON for at most 0.3s
-        - OFF for at most 0.3s
-        - ON for at least 4s
+        - ON for at most 0.4s
         - OFF for at most 0.4s
-        - ON for at most 0.3s
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at least 2.0s
 
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at least 2.0s
+        
+        - OFF for at most 0.4s
+        - ON for at least 2.0s
+        - OFF for at least 0.4s
+        
       then:
         - mqtt.publish:
             topic: "esp32-02/button/garage_tor/command"
             payload: "PRESS"
 
     - timing:
-        - ON for at most 0.3s
-        - OFF for at most 0.3s
-        - ON for at most 0.3s
-        - OFF for at least 0.3s
+        - ON for at most 0.4s
+        - OFF for at most 0.4s
+        - ON for at most 0.4s
+        - OFF for at least 1s
       then:
         - mqtt.publish:
             topic: "esp32-02/switch/i2c_relay05_sw11/command"
             payload: "TOGGLE"
 
     - timing:
-         - ON for at most 0.3s
-         - OFF for at most 0.3s
-         - ON for 0.3s to 1s
+         - ON for at most 0.4s
+         - OFF for at most 0.4s
+         - ON for 0.3s to 1.5s
          - OFF for at least 1s
       then:
          - mqtt.publish:

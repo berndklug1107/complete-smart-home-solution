@@ -5,9 +5,10 @@ esphome:
   name: ${device_name}
 
 external_components:
-  - source:
-      type: local
-      path: components
+  source:
+     type: local
+     path: components
+  components: [ ds248x ]
 
 esp32:
   board: esp32dev
@@ -18,11 +19,11 @@ logger:
 
 api:
   encryption:
-    key: "9I/U4x1QEYDYOBZDNyPH8tAhLJ3vEf6jibKTq5cIyyQ="
+    key: 
 
 ota:
  - platform: esphome 
-   password: "71c7b4a6919a2b867c0b7d8fb69a9023"
+   password:
 
 wifi:
   ssid: !secret wifi_ssid
@@ -116,106 +117,541 @@ light:
     name: "led_001"
     output: led001   
     icon: mdi:led-on
-    effects:
-      - strobe:
-          name: blink_03
-          colors:
-            - state: true
-              duration: 0.3s
-            - state: false
-              duration: 0.3s
-      - strobe:
-          name: blink_05
-          colors:
-            - state: true
-              duration: 0.5s
-            - state: false
-              duration: 0.5s
-      - strobe:
-          name: blink_07
-          colors:
-            - state: true
-              duration: 0.7s
-            - state: false
-              duration: 0.7s
-      - strobe:
-          name: blink_1
-          colors:
-            - state: true
-              duration: 1s
-            - state: false
-              duration: 1s
-
 
   - platform: binary
     id: led_002
     name: "led_002"
     output: led002
     icon: mdi:led-on
-    effects:
-      - strobe:
-          name: blink_03
-          colors:
-            - state: true
-              duration: 0.3s
-            - state: false
-              duration: 0.3s
-      - strobe:
-          name: blink_05
-          colors:
-            - state: true
-              duration: 0.5s
-            - state: false
-              duration: 0.5s
-      - strobe:
-          name: blink_07
-          colors:
-            - state: true
-              duration: 0.7s
-            - state: false
-              duration: 0.7s
-      - strobe:
-          name: blink_1
-          colors:
-            - state: true
-              duration: 1s
-            - state: false
-              duration: 1s
 
   - platform: binary
     id: led_003
     name: "led_003"
     output: led003
     icon: mdi:led-on
-    effects:
-      - strobe:
-          name: blink_03
-          colors:
-            - state: true
-              duration: 0.3s
-            - state: false
-              duration: 0.3s
-      - strobe:
-          name: blink_05
-          colors:
-            - state: true
-              duration: 0.5s
-            - state: false
-              duration: 0.5s
-      - strobe:
-          name: blink_07
-          colors:
-            - state: true
-              duration: 0.7s
-            - state: false
-              duration: 0.7s
-      - strobe:
-          name: blink_1
-          colors:
-            - state: true
-              duration: 1s
-            - state: false
-              duration: 1s
+
+output:
+
+# Status-LEDs
+
+ - platform: gpio
+   id: led001
+   pin:
+     mcp23xxx: i2c_expand09
+     number: 0
+
+ - platform: gpio
+   id: led002
+   pin:
+     mcp23xxx: i2c_expand09
+     number: 1
+
+ - platform: gpio
+   id: led003
+   pin:
+     mcp23xxx: i2c_expand09
+     number: 2
+
+#  B o a r d 01
+
+ - platform: slow_pwm
+   id: ch01
+   pin: GPIO16
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.55
+
+ - platform: slow_pwm
+   id: ch02
+   pin: GPIO25
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch03
+   pin: GPIO26
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.5
+
+ - platform: slow_pwm
+   id: ch04
+   pin: GPIO27
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.5
+
+ - platform: slow_pwm
+   id: ch05
+   pin: GPIO14
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch06
+   pin: GPIO13
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch07
+   pin: GPIO33
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+
+#  B o a r d 02
+
+ - platform: slow_pwm
+   id: ch08
+   pin: GPIO17
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.5
+
+ - platform: slow_pwm
+   id: ch09
+   pin: GPIO18
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch10
+   pin: GPIO19
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch11
+   pin: GPIO4
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch12
+   pin: GPIO32
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+ - platform: slow_pwm
+   id: ch13
+   pin: GPIO23
+   period: 40s
+   zero_means_zero: True
+   min_power: 0.1
+   max_power: 0.6
+
+
+number:
+  - platform: template
+    name: "hk_eg_board01"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_b01
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_ez03
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_kueche_fenster
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_kueche_tuer
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_windfang
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_vorraum01
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_vorraum02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wc
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_board02"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_b02
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_ez02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_ez01
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz04
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz03
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz01
+            value: !lambda 'return x;'
+ 
+  - platform: template
+    name: "hk_eg_all"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_all
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_kueche
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_ez
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_windfang
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_vorraum
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wc
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_kueche"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_kueche
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_kueche_fenster
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_kueche_tuer
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_vorraum"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_vorraum
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_vorraum01
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_vorraum02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_ez"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_ez
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_ez03
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_ez02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_ez01
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_eg_wz"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - number.set:
+            id: hk_eg_wz04
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz03
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz02
+            value: !lambda 'return x;'
+        - number.set:
+            id: hk_eg_wz01
+            value: !lambda 'return x;'
+
+
+  - platform: template
+    name: "hk_eg_vorraum01"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_vorraum01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch04
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_vorraum02"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_vorraum02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch06
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_windfang"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_windfang
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch05
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_wc"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wc
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch07
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_kueche_fenster"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_kueche_fenster
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch02
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_kueche_tuer"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_kueche_tuer
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch03
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_ez01"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_ez01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch09
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_ez02"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_ez02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch08
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_ez03"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_ez03
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch01
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_wz01"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true    
+    set_action:
+      then:
+        - output.set_level:
+            id: ch13
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_eg_wz02"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true    
+    set_action:
+      then:
+        - output.set_level:
+            id: ch12
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_wz03"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz03
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true    
+    set_action:
+      then:
+        - output.set_level:
+            id: ch11
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_eg_wz04"
+    icon: "mdi:pipe-valve"
+    id: hk_eg_wz04
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true    
+    set_action:
+      then:
+        - output.set_level:
+            id: ch10
+            level: !lambda 'return x / 100.0;'
+
 
 
 sensor:
@@ -509,609 +945,3 @@ sensor:
   - platform: wifi_signal
     name: "WiFi Signal ${device_name}"
     update_interval: 60s
-
-output:
-
-# Status-LEDs
-
- - platform: gpio
-   id: led001
-   pin:
-     mcp23xxx: i2c_expand09
-     number: 0
-
- - platform: gpio
-   id: led002
-   pin:
-     mcp23xxx: i2c_expand09
-     number: 1
-
- - platform: gpio
-   id: led003
-   pin:
-     mcp23xxx: i2c_expand09
-     number: 2
-
-#  B o a r d 01
-
- - platform: slow_pwm
-   id: ch01
-   pin: GPIO16
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.55
-
- - platform: slow_pwm
-   id: ch02
-   pin: GPIO25
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.6
-
- - platform: slow_pwm
-   id: ch03
-   pin: GPIO26
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.5
-
- - platform: slow_pwm
-   id: ch04
-   pin: GPIO27
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.5
-
- - platform: slow_pwm
-   id: ch05
-   pin: GPIO14
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.6
-
- - platform: slow_pwm
-   id: ch06
-   pin: GPIO13
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.6
-
- - platform: slow_pwm
-   id: ch07
-   pin: GPIO33
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.6
-
-
-#  B o a r d 02
-
- - platform: slow_pwm
-   id: ch08
-   pin: GPIO17
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.5
-
- - platform: slow_pwm
-   id: ch09
-   pin: GPIO18
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.6
-
- - platform: slow_pwm
-   id: ch10
-   pin: GPIO19
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.6
-
- - platform: slow_pwm
-   id: ch11
-   pin: GPIO4
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.6
-
- - platform: slow_pwm
-   id: ch12
-   pin: GPIO32
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.6
-
- - platform: slow_pwm
-   id: ch13
-   pin: GPIO23
-   period: 60s
-   zero_means_zero: True
-   min_power: 0.1
-   max_power: 0.6
-
-
-servo:
-  - id: drive_01
-    output: ch01
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_02
-    output: ch02
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_03
-    output: ch03
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_04
-    output: ch04
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_05
-    output: ch05
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_06
-    output: ch06
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_07
-    output: ch07
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_08
-    output: ch08
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_09
-    output: ch09
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_10
-    output: ch10
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_11
-    output: ch11
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_12
-    output: ch12
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-  - id: drive_13
-    output: ch13
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-
-
-number:
-  - platform: template
-    name: "hk_eg_board01"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_b01
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - number.set:
-            id: hk_eg_ez03
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_kueche_fenster
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_kueche_tuer
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_windfang
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_vorraum01
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_vorraum02
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wc
-            value: !lambda 'return x;'
-
-  - platform: template
-    name: "hk_eg_board02"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_b02
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - number.set:
-            id: hk_eg_ez02
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_ez01
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wz04
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wz03
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wz02
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wz01
-            value: !lambda 'return x;'
- 
-  - platform: template
-    name: "hk_eg_all"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_all
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - number.set:
-            id: hk_eg_kueche
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_ez
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wz
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_windfang
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_vorraum
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wc
-            value: !lambda 'return x;'
-
-  - platform: template
-    name: "hk_eg_kueche"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_kueche
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - number.set:
-            id: hk_eg_kueche_fenster
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_kueche_tuer
-            value: !lambda 'return x;'
-
-  - platform: template
-    name: "hk_eg_vorraum"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_vorraum
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - number.set:
-            id: hk_eg_vorraum01
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_vorraum02
-            value: !lambda 'return x;'
-
-  - platform: template
-    name: "hk_eg_ez"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_ez
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - number.set:
-            id: hk_eg_ez03
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_ez02
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_ez01
-            value: !lambda 'return x;'
-
-  - platform: template
-    name: "hk_eg_wz"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_wz
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - number.set:
-            id: hk_eg_wz04
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wz03
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wz02
-            value: !lambda 'return x;'
-        - number.set:
-            id: hk_eg_wz01
-            value: !lambda 'return x;'
-
-
-  - platform: template
-    name: "hk_eg_vorraum01"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_vorraum01
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_04
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_vorraum02"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_vorraum02
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_06
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_windfang"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_windfang
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_05
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_wc"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_wc
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_07
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_kueche_fenster"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_kueche_fenster
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_02
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_kueche_tuer"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_kueche_tuer
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_03
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_ez01"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_ez01
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_09
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_ez02"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_ez02
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_08
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_ez03"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_ez03
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_01
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_wz01"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_wz01
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_13
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_wz02"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_wz02
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_12
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_wz03"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_wz03
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_11
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_eg_wz04"
-    icon: "mdi:pipe-valve"
-    id: hk_eg_wz04
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_10
-            level: !lambda 'return x / 100.0;'

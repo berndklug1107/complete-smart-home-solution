@@ -11,11 +11,11 @@ logger:
 
 api:
   encryption:
-    key: "DmH8pl4LtKPiyBAOXaOYWgBLM8O2UJTuYXrO9EbhTJE="
+    key: 
 
 ota:
   - platform: esphome
-    password: "33fb1fafdea7169cda8a4c7c9e4af71f"
+    password: 
 
 wifi:
   ssid: !secret wifi_ssid
@@ -28,7 +28,7 @@ wifi:
 captive_portal:
 
 mqtt:
-  broker: 10.0.0.10
+  broker: 10.0.0.21
   username: mqtt
   password: mqtt
   discovery: false
@@ -124,6 +124,18 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
+
+    on_multi_click:
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+         - homeassistant.service:
+             service: light.toggle
+             data:
+               entity_id: light.light02
+               brightness_pct: "40"
+
     on_press:
       then:
         - mqtt.publish:
@@ -163,6 +175,18 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
+    on_multi_click:
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+         - homeassistant.service:
+             service: light.toggle
+             data:
+               entity_id: light.light03
+               brightness_pct: "40"
+
     on_press:
       then:
         - mqtt.publish:
@@ -218,6 +242,18 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
+    on_multi_click:
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+         - homeassistant.service:
+             service: light.toggle
+             data:
+               entity_id: light.light02
+               brightness_pct: "40"
+               
     on_press:
       then:
         - mqtt.publish:

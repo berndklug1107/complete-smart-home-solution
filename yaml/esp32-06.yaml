@@ -10,19 +10,20 @@ esp32:
     type: arduino
    
 external_components:
-  - source:
-      type: local
-      path: custom_components
+  source:
+     type: local
+     path: components
+  components: [ i2c_dimmer ]
 
 logger:
 
 api:
   encryption:
-    key: "bGuamnlqbeGGXyGGZr6EibRj2ABg4iBQXTPIBBPhEo0="
+    key: 
 
 ota:
   - platform: esphome
-    password: "ba2ceffbcd9cb0dc88fda99e9c22f54f"
+    password: 
 
 wifi:
   ssid: !secret wifi_ssid
@@ -35,16 +36,51 @@ wifi:
 captive_portal:
 
 mqtt:
-  broker: 10.0.0.10
+  broker: 10.0.0.21
   username: mqtt
   password: mqtt
   discovery: false
+
+
+script:
+  - id: dimm_script00
+    parameters:
+      target_light: esphome::light::LightState*
+      trigger_binary: esphome::binary_sensor::BinarySensor*
+    mode: restart
+    then:
+      - delay: 0.8s 
+      - while:
+          condition:
+            lambda: return trigger_binary->state;
+          then:
+            - lambda: |-
+                if (target_light == nullptr || trigger_binary == nullptr) return;
+                float current_b = target_light->remote_values.get_brightness();
+                static bool dim_up = true; 
+                if (current_b < 0.05f) dim_up = true;
+                else if (current_b > 0.95f) dim_up = false;
+
+                float step = dim_up ? 0.02f : -0.02f;
+                float new_brightness = current_b + step;
+                
+                if (new_brightness > 1.0f) new_brightness = 1.0f;
+                if (new_brightness < 0.01f) new_brightness = 0.01f;
+
+                auto call = target_light->make_call();
+                call.set_brightness(new_brightness);
+                call.set_state(true);
+                call.set_transition_length(100);
+                call.perform();
+            - delay: 0.1s
+
 
 i2c:
   - id: bus_a
     sda: GPIO21
     scl: GPIO22
     scan: true
+    frequency: 40kHz    
 
 one_wire:
   - platform: gpio
@@ -54,7 +90,7 @@ one_wire:
 
 pcf8574:
   - id: i2c_relay01   # ost
-    address: 0x27
+    address: 0x3F
     pcf8575: false
     i2c_id: bus_a
 
@@ -96,6 +132,35 @@ light:
     icon: mdi:light-recessed
     name: "light00"
     output: dimmer_20
+    gamma_correct: 2
+    effects:
+      - pulse:
+      - pulse:
+          name: "Pulse 2/2"
+          transition_length: 2s
+          update_interval: 2s
+          min_brightness: 1%
+          max_brightness: 100%
+      - pulse:
+          name: "Pulse 2/3"
+          transition_length: 2s
+          update_interval: 3s
+          min_brightness: 1%
+          max_brightness: 100%
+      - pulse:
+          name: "Pulse 3/3"
+          transition_length: 3s
+          update_interval: 3s
+          min_brightness: 1%
+          max_brightness: 100%
+      - pulse:
+          name: "Asymmetrical Pulse"
+          transition_length:
+            on_length: 1s
+            off_length: 0.2s
+          update_interval: 1.5s
+          min_brightness: 1%
+          max_brightness: 100%
 
 switch:
 
@@ -232,73 +297,303 @@ output:
     address: 0x10
     id: dimmer_20
     power_supply: i2c_relay02_sw00
-    min_power: 0.1
-    max_power: 0.95
+    min_power: 0.04
+    max_power: 0.96
 
-  - platform: slow_pwm
+  - platform: slow_pwm        # bad_01
     id: ch01
     pin: GPIO13
-    period: 60s
+    period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.6
+    max_power: 0.5
 
-  - platform: slow_pwm
+  - platform: slow_pwm        # bad_02
     id: ch02
     pin: GPIO14
-    period: 60s
+    period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.6
+    max_power: 0.5
 
-  - platform: slow_pwm
+  - platform: slow_pwm        # west_01
     id: ch03
     pin: GPIO27
-    period: 60s
+    period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.6
+    max_power: 0.5
 
-  - platform: slow_pwm
+  - platform: slow_pwm        # west_02
     id: ch04
     pin: GPIO26
-    period: 60s
+    period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.6
+    max_power: 0.5
 
-  - platform: slow_pwm
+  - platform: slow_pwm         # mitte_01
     id: ch05
     pin: GPIO25
-    period: 60s
+    period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.6
+    max_power: 0.5
 
-  - platform: slow_pwm
+  - platform: slow_pwm         # mitte_02
     id: ch06
     pin: GPIO33
-    period: 60s
+    period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.6
+    max_power: 0.5
 
-  - platform: slow_pwm
+  - platform: slow_pwm        # ost_01
     id: ch07
     pin: GPIO32
-    period: 60s
+    period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.6
+    max_power: 0.4
 
-  - platform: slow_pwm
+  - platform: slow_pwm         # ost_02
     id: ch08
     pin: GPIO23
-    period: 60s
+    period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.6
+    max_power: 0.5
 
+number:
+
+  # Bad Kanal 1
+  - platform: template
+    name: "hk_og_bad01"
+    icon: "mdi:pipe-valve"
+    id: og_bad01
+    min_value: 0
+    max_value: 100
+    step: 1
+    restore_value: true
+    optimistic: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch01
+            level: !lambda 'return x / 100.0;'
+
+  # Bad Kanal 2
+  - platform: template
+    name: "hk_og_bad02"
+    icon: "mdi:pipe-valve"
+    id: og_bad02
+    min_value: 0
+    max_value: 100
+    step: 1
+    restore_value: true
+    optimistic: true
+    set_action:
+      then:
+        - output.set_level:
+            id: ch02
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_og_west01"
+    icon: "mdi:pipe-valve"
+    id: og_west01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true    
+    # update_interval: 50s
+    set_action:
+      then:
+        - output.set_level:
+            id: ch03
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_west02"
+    icon: "mdi:pipe-valve"
+    id: og_west02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    restore_value: true    
+    # update_interval: 50s
+    set_action:
+      then:
+        - output.set_level:
+            id: ch04
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_mitte01"
+    icon: "mdi:pipe-valve"
+    id: og_mitte01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    # update_interval: 50s
+    restore_value: true    
+    set_action:
+      then:
+        - output.set_level:
+            id: ch05
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_mitte02"
+    icon: "mdi:pipe-valve"
+    id: og_mitte02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true    
+    set_action:
+      then:
+        - output.set_level:
+            id: ch06
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_ost01"
+    icon: "mdi:pipe-valve"
+    id: og_ost01
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true    
+    set_action:
+      then:
+        - output.set_level:
+            id: ch07
+            level: !lambda 'return x / 100.0;'
+
+  - platform: template
+    name: "hk_og_ost02"
+    icon: "mdi:pipe-valve"
+    id: og_ost02
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true    
+    set_action:
+      then:
+        - output.set_level:
+            id: ch08
+            level: !lambda 'return x / 100.0;'
+
+
+  - platform: template
+    name: "hk_og_bad"
+    id: og_bad
+    icon: "mdi:pipe-valve"
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true    
+    set_action:
+      then:
+        - number.set:
+            id: og_bad01
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_bad02
+            value: !lambda 'return x;'
+
+
+  - platform: template
+    name: "hk_og_west"
+    icon: "mdi:pipe-valve"
+    id: og_west
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true    
+    set_action:
+      then:
+        - number.set:
+            id: og_west01
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_west02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_og_mitte"
+    icon: "mdi:pipe-valve"
+    id: og_mitte
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true     
+    set_action:
+      then:
+        - number.set:
+            id: og_mitte01
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_mitte02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_og_ost"
+    icon: "mdi:pipe-valve"
+    id: og_ost
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true     
+    set_action:
+      then:
+        - number.set:
+            id: og_ost01
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_ost02
+            value: !lambda 'return x;'
+
+  - platform: template
+    name: "hk_og_all"
+    icon: "mdi:pipe-valve"
+    id: og_all
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    restore_value: true
+    set_action:    
+      then:
+        - number.set:
+            id: og_bad
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_west
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_mitte
+            value: !lambda 'return x;'
+        - number.set:
+            id: og_ost
+            value: !lambda 'return x;'            
 
 binary_sensor:
 
@@ -341,6 +636,17 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
+    on_multi_click:
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+         - homeassistant.service:
+             service: light.toggle
+             data:
+               entity_id: light.light01
+
     on_press:
       then:
         - mqtt.publish:
@@ -366,7 +672,7 @@ binary_sensor:
     on_multi_click:
     - timing:
         - ON for at most 0.3s
-        - OFF for at least 0.4s
+        - OFF for at least 0.6s
       then:
         - switch.toggle: i2c_relay02_sw02        
     - timing:
@@ -386,7 +692,7 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
         - homeassistant.service:
-             service: cover.open_cover
+             service: cover.close_cover
              data:
                entity_id: cover.rollo_og_ost
     - timing:
@@ -396,7 +702,7 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
         - homeassistant.service:
-             service: cover.close_cover
+             service: cover.open_cover
              data:
                entity_id: cover.rollo_og_ost
 
@@ -462,7 +768,7 @@ binary_sensor:
     on_multi_click:
     - timing:
         - ON for at most 0.4s
-        - OFF for at least 0.4s
+        - OFF for at least 0.6s
       then:
         - switch.toggle: i2c_relay02_sw01
     - timing:
@@ -482,7 +788,7 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
         - homeassistant.service:
-             service: cover.open_cover
+             service: cover.close_cover
              data:
                entity_id: cover.rollo_bad
     - timing:
@@ -492,7 +798,7 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
         - homeassistant.service:
-             service: cover.close_cover
+             service: cover.open_cover
              data:
                entity_id: cover.rollo_bad
 
@@ -508,21 +814,6 @@ binary_sensor:
       inverted: true
     device_class: light
     on_multi_click:
-
-    - timing:      
-        - ON for at most 0.3s
-        - OFF for at least 0.4s        
-      then:
-        - if:
-            condition:
-              light.is_off: light00
-            then:
-              light.turn_on: 
-                id: light00
-                brightness: 0.5
-            else:
-              light.turn_off: light00
-
     - timing:
         - ON for 0.3s to 0.8s
         - OFF for at least 0.4s
@@ -531,7 +822,7 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_bad
-              media_content_id: "http://10.0.0.57:8082/rock_flac"
+              media_content_id: "http://10.0.0.69:8082/rock" 
               media_content_type: "music"
 
     - timing:
@@ -542,7 +833,22 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_bad
-              media_content_id: "http://10.0.0.57:8083/main_flac"
+              media_content_id: "http://10.0.0.77:8082/main"
+              media_content_type: "music"
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at most 0.4s
+        - ON for at most 0.3s
+        - OFF for at least 0.4s
+      then:
+        - homeassistant.service:
+            service: media_player.play_media
+            data:
+              entity_id: media_player.nad_bad
+              media_content_id: "http://10.0.0.30:8082/mellow"
               media_content_type: "music"
 
     - timing:
@@ -558,46 +864,24 @@ binary_sensor:
 
     - timing:
         - ON for at most 0.3s
-        - OFF for at most 0.3s
-        - ON for 0.3s to 0.8s
-        - OFF for at least 0.4s
+        - OFF for at least 0.6s
       then:
-        - homeassistant.service:
-            service: media_player.play_media
-            data:
-              entity_id: media_player.nad_bad
-              media_content_id: "http://10.0.0.57:8084/mellow_flac"
-              media_content_type: "music"
-
+        - if:
+            condition:
+              light.is_off: light00
+            then:
+              light.turn_on: 
+                id: light00
+                brightness: 0.8
+            else:
+              light.turn_off: light00
+              
     on_press:
       then:
-      - if:
-          condition: 
-            light.is_off: light00
-          then:
-          - delay: 1.5s
-          - while:
-              condition:
-                binary_sensor.is_on: bin_sens_08
-              then:
-                - light.dim_relative:
-                    id: light00
-                    relative_brightness: 3%
-                    transition_length: 0.2s
-                - delay: 0.1s
-          else:
-          - delay: 1.5s
-          - while:
-              condition:
-                and:
-                  - binary_sensor.is_on: bin_sens_08
-                  - light.is_on: light00
-              then:
-                - light.dim_relative:
-                    id: light00
-                    relative_brightness: -3%
-                    transition_length: 0.2s
-                - delay: 0.1s
+        - script.execute:
+            id: dimm_script00
+            target_light: light00
+            trigger_binary: bin_sens_08
 
   - platform: gpio              # OG Vorraum Tür mitte unten rechts (T)
     name: "bin_sens_09"
@@ -610,17 +894,16 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
-    on_press:
-      then:
-        - mqtt.publish:
-            topic: "dimmer/dimm_script01"
-            payload: "pressed01"
-    on_release:
-      then:
-        - mqtt.publish:
-            topic: "dimmer/dimm_script01"
-            payload: "released01"
     on_multi_click:
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+         - homeassistant.service:
+             service: light.toggle
+             data:
+               entity_id: light.light01
+
     - timing:
         - ON for at most 0.3s
         - OFF for at most 0.3s
@@ -638,7 +921,7 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
         - homeassistant.service:
-             service: cover.open_cover
+             service: cover.close_cover
              data:
                entity_id: cover.rollo_og_mitte
     - timing:
@@ -648,9 +931,21 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
         - homeassistant.service:
-             service: cover.close_cover
+             service: cover.open_cover
              data:
                entity_id: cover.rollo_og_mitte
+
+    on_press:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script01"
+            payload: "pressed01"
+    on_release:
+      then:
+        - mqtt.publish:
+            topic: "dimmer/dimm_script01"
+            payload: "released01"               
+
 
   - platform: gpio          # OG Vorraum Tür mitte oben (S)
     name: "bin_sens_10"
@@ -681,7 +976,7 @@ binary_sensor:
     on_multi_click:
     - timing:
         - ON for at most 0.4s
-        - OFF for at least 0.4s
+        - OFF for at least 0.6s
       then:
       - mqtt.publish:
           topic: "esp32-02/switch/i2c_relay05_sw09/command"
@@ -703,7 +998,7 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
         - homeassistant.service:
-             service: cover.open_cover
+             service: cover.close_cover
              data:
                entity_id: cover.rollo_og_west
     - timing:
@@ -713,7 +1008,7 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
         - homeassistant.service:
-             service: cover.close_cover
+             service: cover.open_cover
              data:
                entity_id: cover.rollo_og_west
 
@@ -844,17 +1139,13 @@ sensor:
     model: dht22
     update_interval: 50s
 
-  - platform: dht
-    model: dht22
-    pin: GPIO18
+  - platform: aht10
+    variant: AHT20
+    i2c_id: bus_a
     temperature:
       name: "Temp OG Ost"
-      filters:
-       - offset: 0.2
     humidity:
       name: "Humidity OG Ost"
-      filters:
-       - offset: -3
     update_interval: 50s
 
   - platform: dht
@@ -969,293 +1260,3 @@ sensor:
   - platform: wifi_signal
     name: "WiFi Signal ${device_name}"
     update_interval: 60s
-
-
-servo:
-      # bad_01
-  - id: drive_01
-    output: ch01
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-      # bad_02
-  - id: drive_02
-    output: ch02
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-      # west_01
-  - id: drive_03
-    output: ch03
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-      # west_02
-  - id: drive_04
-    output: ch04
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-      # mitte_01
-  - id: drive_05
-    output: ch05
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-      # mitte_02
-  - id: drive_06
-    output: ch06
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-      # ost_01
-  - id: drive_07
-    output: ch07
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-      # ost_02
-  - id: drive_08
-    output: ch08
-    min_level: 0
-    max_level: 1
-    idle_level: 0
-    restore: true
-
-
-number:
-
-  - platform: template
-    name: "hk_og_bad01"
-    icon: "mdi:pipe-valve"
-    id: og_bad01
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-    # update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_01
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_og_bad02"
-    icon: "mdi:pipe-valve"
-    id: og_bad02
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-    # update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_02
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_og_west01"
-    icon: "mdi:pipe-valve"
-    id: og_west01
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-    # update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_03
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_og_west02"
-    icon: "mdi:pipe-valve"
-    id: og_west02
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-    # update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_04
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_og_mitte01"
-    icon: "mdi:pipe-valve"
-    id: og_mitte01
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-    # update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_05
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_og_mitte02"
-    icon: "mdi:pipe-valve"
-    id: og_mitte02
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-    # update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_06
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_og_ost01"
-    icon: "mdi:pipe-valve"
-    id: og_ost01
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-    # update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_07
-            level: !lambda 'return x / 100.0;'
-
-  - platform: template
-    name: "hk_og_ost02"
-    icon: "mdi:pipe-valve"
-    id: og_ost02
-    min_value: 0
-    max_value: 100
-    step: 1
-    optimistic: true
-    # update_interval: 50s
-    set_action:
-      then:
-        - servo.write:
-            id: drive_08
-            level: !lambda 'return x / 100.0;'
-
-
-  - platform: template
-    name: "hk_og_bad"
-    icon: "mdi:pipe-valve"
-    id: og_bad
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-        - number.set:
-            id: og_bad01
-            value: !lambda 'return x;'
-        - number.set:
-            id: og_bad02
-            value: !lambda 'return x;'
-
-  - platform: template
-    name: "hk_og_west"
-    icon: "mdi:pipe-valve"
-    id: og_west
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-        - number.set:
-            id: og_west01
-            value: !lambda 'return x;'
-        - number.set:
-            id: og_west02
-            value: !lambda 'return x;'
-
-  - platform: template
-    name: "hk_og_mitte"
-    icon: "mdi:pipe-valve"
-    id: og_mitte
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-        - number.set:
-            id: og_mitte01
-            value: !lambda 'return x;'
-        - number.set:
-            id: og_mitte02
-            value: !lambda 'return x;'
-
-  - platform: template
-    name: "hk_og_ost"
-    icon: "mdi:pipe-valve"
-    id: og_ost
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 50s
-    set_action:
-        - number.set:
-            id: og_ost01
-            value: !lambda 'return x;'
-        - number.set:
-            id: og_ost02
-            value: !lambda 'return x;'
-
-  - platform: template
-    name: "hk_og_all"
-    icon: "mdi:pipe-valve"
-    id: og_all
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    optimistic: true
-#    update_interval: 20s
-    set_action:
-   # on_value:
-      then:
-        - number.set:
-            id: og_bad
-            value: !lambda 'return x;'
-        - number.set:
-            id: og_west
-            value: !lambda 'return x;'
-        - number.set:
-            id: og_mitte
-            value: !lambda 'return x;'
-        - number.set:
-            id: og_ost
-            value: !lambda 'return x;'

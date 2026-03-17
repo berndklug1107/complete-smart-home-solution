@@ -7,7 +7,9 @@ esphome:
 esp32:
   board: esp32dev
   framework:
-    type: arduino
+     type: arduino
+     advanced:
+      minimum_chip_revision: "3.1"
    
 external_components:
   source:
@@ -17,21 +19,12 @@ external_components:
 
 logger:
 
-api:
-  encryption:
-    key: 
-
-ota:
-  - platform: esphome
-    password: 
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
-  ap:
-    ssid: "${device_name} Hotspot"
-    password: "V9Zyt6E9PsZ1"
+
 
 captive_portal:
 
@@ -49,7 +42,7 @@ script:
       trigger_binary: esphome::binary_sensor::BinarySensor*
     mode: restart
     then:
-      - delay: 0.8s 
+      - delay: 1.2s 
       - while:
           condition:
             lambda: return trigger_binary->state;
@@ -132,6 +125,7 @@ light:
     icon: mdi:light-recessed
     name: "light00"
     output: dimmer_20
+    restore_mode: RESTORE_DEFAULT_OFF
     gamma_correct: 2
     effects:
       - pulse:
@@ -187,6 +181,7 @@ switch:
       mode:
         output: true
     inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: gpio                  # Deckenspots klein
     name: "i2c_relay01_sw00"
@@ -198,6 +193,7 @@ switch:
       mode:
         output: true
     inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: gpio                  # OG Ost Balkon
     name: "i2c_relay01_sw02"
@@ -209,6 +205,7 @@ switch:
       mode:
         output: true
     inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
 
 #     vorraum / bad / mitte
@@ -223,6 +220,7 @@ switch:
       mode:
         output: true
     inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: gpio                    # Wandlicht OG Vorraum
     name: "i2c_relay02_sw02"
@@ -234,6 +232,7 @@ switch:
       mode:
         output: true
     inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: gpio                    # Bad Steckdose
     name: "i2c_relay02_sw03"
@@ -245,6 +244,7 @@ switch:
       mode:
         output: true
     inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
             #   mitte
 
@@ -258,6 +258,7 @@ switch:
       mode:
         output: true
     inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: gpio                   # OG Mitte Balkon
     name: "i2c_relay02_sw05"
@@ -269,6 +270,7 @@ switch:
       mode:
         output: true
     inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: gpio                  # OG Mitte Schranklicht
     name: "i2c_relay02_sw06"
@@ -280,6 +282,7 @@ switch:
       mode:
         output: true
     inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: gpio                  # frei
     name: "i2c_relay02_sw07"
@@ -354,7 +357,7 @@ output:
     period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.4
+    max_power: 0.33
 
   - platform: slow_pwm         # ost_02
     id: ch08
@@ -362,7 +365,7 @@ output:
     period: 50s
     zero_means_zero: True
     min_power: 0.1
-    max_power: 0.5
+    max_power: 0.4
 
 number:
 
@@ -597,6 +600,10 @@ number:
 
 binary_sensor:
 
+  - platform: homeassistant
+    id: light01_status
+    entity_id: light.light01
+
 #   P I R
 
   - platform: gpio
@@ -642,10 +649,22 @@ binary_sensor:
         - ON for at most 0.3s
         - OFF for at least 0.6s
       then:
-         - homeassistant.service:
-             service: light.toggle
-             data:
-               entity_id: light.light01
+        - if:
+            condition:
+              binary_sensor.is_off: light01_status
+            then:
+              - homeassistant.service:
+                  service: light.turn_on
+                  data:
+                    entity_id: light.light01
+                    brightness_pct: "40"
+                    transition: "5"
+            else:
+              - homeassistant.service:
+                  service: light.turn_off
+                  data:
+                    entity_id: light.light01
+                    transition: "8"
 
     on_press:
       then:
@@ -770,7 +789,7 @@ binary_sensor:
         - ON for at most 0.4s
         - OFF for at least 0.6s
       then:
-        - switch.toggle: i2c_relay02_sw01
+        - switch.toggle: i2c_relay02_sw01     # Bad Bodenspots
     - timing:
         - ON for at most 0.3s
         - OFF for at most 0.3s
@@ -822,7 +841,7 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_bad
-              media_content_id: "http://10.0.0.69:8082/rock" 
+              media_content_id: "http://10.0.0.30:8082/rock" 
               media_content_type: "music"
 
     - timing:
@@ -833,7 +852,7 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_bad
-              media_content_id: "http://10.0.0.77:8082/main"
+              media_content_id: "http://10.0.0.31:8082/main"
               media_content_type: "music"
 
     - timing:
@@ -848,19 +867,41 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_bad
-              media_content_id: "http://10.0.0.30:8082/mellow"
+              media_content_id: "http://10.0.0.33:8082/mellow"
               media_content_type: "music"
 
     - timing:
         - ON for at most 0.3s
         - OFF for at most 0.3s
         - ON for at most 0.3s
+        - OFF for at least 0.4s        
+      then:
+         - homeassistant.service:
+              service: media_player.media_next_track
+              data:
+                entity_id: media_player.touch_pi
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s        
+      then:
+         - homeassistant.service:
+              service: media_player.media_previous_track
+              data:
+                entity_id: media_player.touch_pi
+
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at least 0.8s
         - OFF for at least 0.4s
       then:
          - homeassistant.service:
               service: media_player.media_play_pause
               data:
-                entity_id: media_player.nad_bad
+                entity_id: media_player.touch_pi
 
     - timing:
         - ON for at most 0.3s
@@ -870,12 +911,14 @@ binary_sensor:
             condition:
               light.is_off: light00
             then:
-              light.turn_on: 
-                id: light00
-                brightness: 0.8
+              - light.turn_on: 
+                  id: light00
+                  brightness: 0.7
+                  transition_length: 5s
             else:
-              light.turn_off: light00
-              
+              - light.turn_off:
+                  id: light00
+                  transition_length: 5s
     on_press:
       then:
         - script.execute:
@@ -895,15 +938,6 @@ binary_sensor:
       inverted: true
     device_class: light
     on_multi_click:
-    - timing:
-        - ON for at most 0.3s
-        - OFF for at least 0.6s
-      then:
-         - homeassistant.service:
-             service: light.toggle
-             data:
-               entity_id: light.light01
-
     - timing:
         - ON for at most 0.3s
         - OFF for at most 0.3s
@@ -935,6 +969,27 @@ binary_sensor:
              data:
                entity_id: cover.rollo_og_mitte
 
+    - timing:
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+        - if:
+            condition:
+              binary_sensor.is_off: light01_status
+            then:
+              - homeassistant.service:
+                  service: light.turn_on
+                  data:
+                    entity_id: light.light01
+                    brightness_pct: "40"
+                    transition: "5"
+            else:
+              - homeassistant.service:
+                  service: light.turn_off
+                  data:
+                    entity_id: light.light01
+                    transition: "8"
+
     on_press:
       then:
         - mqtt.publish:
@@ -944,7 +999,7 @@ binary_sensor:
       then:
         - mqtt.publish:
             topic: "dimmer/dimm_script01"
-            payload: "released01"               
+            payload: "released01"
 
 
   - platform: gpio          # OG Vorraum Tür mitte oben (S)
@@ -1260,3 +1315,7 @@ sensor:
   - platform: wifi_signal
     name: "WiFi Signal ${device_name}"
     update_interval: 60s
+
+  - platform: internal_temperature
+    name: "cpu-temp ${device_name}"
+    update_interval: 60s    

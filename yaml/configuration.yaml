@@ -1,6 +1,9 @@
+
+# Loads default set of integrations. Do not remove.
 default_config:
 recorder:
 
+# Load frontend themes from the themes folder
 frontend:
   themes: !include_dir_merge_named themes
 
@@ -59,96 +62,72 @@ switch:
     #     name: ev04
     automatic_add: false
 
-mqtt:
-  sensor:
-    - name: "Lux Terrasse"
-      state_topic: "cam03/sensor/lux"
-      device_class: illuminance
-      unit_of_measurement: "lx"
-
-    - name: "Temp Terrasse"
-      state_topic: "cam03/sensor/temp_out"
-      device_class: temperature
-      unit_of_measurement: "°C"
-
-    - name: "Humidity Terrasse"
-      state_topic: "cam03/sensor/humidity"
-      device_class: humidity
-      unit_of_measurement: "%"
-
 command_line:
   - sensor:
         name: CPU_temp401
         command: cat /sys/class/thermal/thermal_zone0/temp
         unit_of_measurement: '°C'
         device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float / 1000) }}"
+        value_template: "{{ '%.1f' | format(value | float / 1000) }}"
         scan_interval: 60        
   - sensor:
         name: CPU_temp501
         command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
         unit_of_measurement: '°C'
         device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float) }}"
+        value_template: "{{ '%.1f' | format(value | float) }}"
         scan_interval: 60
   - sensor:
         name: CPU_tempzero01
-        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.85 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.31 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
         unit_of_measurement: '°C'
         device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float) }}"
+        value_template: "{{ '%.1f' | format(value | float) }}"
         scan_interval: 60
   - sensor:
         name: CPU_tempzero02
-        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.77 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.32 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
         unit_of_measurement: '°C'
         device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float) }}"
+        value_template: "{{ '%.1f' | format(value | float) }}"
         scan_interval: 60        
   - sensor:
         name: CPU_tempzero03
-        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.33 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
         unit_of_measurement: '°C'
         device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float) }}"
+        value_template: "{{ '%.1f' | format(value | float) }}"
         scan_interval: 60
   - sensor:
         name: CPU_tempzero05
-        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.69 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.35 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
         unit_of_measurement: '°C'
         device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float) }}"
+        value_template: "{{ '%.1f' | format(value | float) }}"
         scan_interval: 60
   - sensor:
-        name: CPU_tempzero06
-        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.79 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
+        name: CPU_tempzero00
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 "LC_ALL=C awk '{printf(\"%.3f\\n\", \$1/1000)}' /sys/class/thermal/thermal_zone0/temp"
         unit_of_measurement: '°C'
         device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float) }}"
+        value_template: "{{ '%.1f' | format(value | float) }}"
         scan_interval: 60
         
   - sensor:
         name: cam01_temp
-        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.85 "LC_ALL=C awk -F't=' '/t=/ {printf(\"%.3f\\n\", \$2/1000)}' /sys/bus/w1/devices/28-5ad8c5356461/w1_slave"
+        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.31 "LC_ALL=C awk -F't=' '/t=/ {printf(\"%.3f\\n\", \$2/1000)}' /sys/bus/w1/devices/28-5ad8c5356461/w1_slave"
         unit_of_measurement: '°C'
         device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float) }}"
+        value_template: "{{ '%.1f' | format(value | float) }}"
         scan_interval: 60
 
-  - sensor:
-        name: cam03_temp
-        command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 "LC_ALL=C awk -F't=' '/t=/ {printf(\"%.3f\\n\", \$2/1000)}' /sys/bus/w1/devices/28-d0e0c5356461/w1_slave"
-        unit_of_measurement: '°C'
-        device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float) }}"
-        scan_interval: 60
 
   - sensor:
         name: touch_temp
         command: ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 "LC_ALL=C awk -F't=' '/t=/ {printf(\"%.3f\\n\", \$2/1000)}' /sys/bus/w1/devices/28-a6d3c5356461/w1_slave"
         unit_of_measurement: '°C'
         device_class: temperature
-        value_template: "{{ '%.2f' | format(value | float) }}"
+        value_template: "{{ '%.1f' | format(value | float) }}"
         scan_interval: 60
 
 
@@ -162,18 +141,18 @@ shell_command:
     re_mtx: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 sudo systemctl restart mediamtx"
     stop_mtx: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.20 sudo systemctl stop mediamtx"
     
-    down_zero01: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.85 sudo shutdown now"
-    down_zero02: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.77 sudo shutdown now"    
-    down_zero03: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 sudo shutdown now"
-    down_zero05: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.69 sudo shutdown now"
-    down_zero06: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.79 sudo shutdown now"
+    down_zero01: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.31 sudo shutdown now"
+    down_zero02: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.32 sudo shutdown now"    
+    down_zero03: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.33 sudo shutdown now"
+    down_zero05: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.35 sudo shutdown now"
+    down_zero00: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 sudo shutdown now"
     
     
-    reboot_zero01: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.85 sudo reboot now"
-    reboot_zero02: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.77 sudo reboot now"    
-    reboot_zero03: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 sudo reboot now"
-    reboot_zero05: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.69 sudo reboot now"
-    reboot_zero06: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.79 sudo reboot now"     
+    reboot_zero01: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.31 sudo reboot now"
+    reboot_zero02: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.32 sudo reboot now"    
+    reboot_zero03: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.33 sudo reboot now"
+    reboot_zero05: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.35 sudo reboot now"
+    reboot_zero00: "ssh -i /config/ssh_keys/id_rsa -o StrictHostKeyChecking=no pi@10.0.0.30 sudo reboot now"     
 
 
 cover:
@@ -221,7 +200,6 @@ cover:
        warema_408c_07:
         name: warema_alle
         signal_repetitions: 2
-
 logger:
   default: error
   #logs:

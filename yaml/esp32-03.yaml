@@ -1,0 +1,210 @@
+substitutions:            # Terrasse
+  device_name: esp32-03
+
+esphome:
+  name: ${device_name}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    advanced:
+      minimum_chip_revision: "3.1"    
+
+logger:
+#  level: VERBOSE
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "esp32-03"
+    password: "XEHVnoFBD0Ku"
+
+web_server:
+  port: 80
+
+captive_portal:
+
+
+i2c:
+  - id: bus_a
+    sda: GPIO23
+    scl: GPIO22
+    scan: true
+    
+output:
+  - platform: ledc
+    pin: GPIO17
+    id: pwm_led_out01
+    frequency: 25khz 
+    min_power: 0.1
+    max_power: 1
+    zero_means_zero: true
+
+  - platform:  ledc
+    pin: GPIO18
+    id: pwm_fan01
+    frequency: 25kHz
+    min_power: 0.2
+    max_power: 1
+    zero_means_zero: true
+
+  - platform: ledc
+    pin: GPIO19
+    id: pwm_fan02
+    frequency: 25kHz
+    min_power: 0.1
+    max_power: 1
+    zero_means_zero: true
+
+
+one_wire:
+  - platform: gpio
+    pin: GPIO4
+    id: hub_01
+
+
+fan:
+  - platform: speed
+    id: pwm_out01
+    name: "fan_led"
+    output: pwm_fan01
+  #  speed_count: 100
+    restore_mode: RESTORE_DEFAULT_OFF  
+    
+  - platform: speed
+    id: pwm_out02
+    name: "fan_house"
+    output: pwm_fan02
+    restore_mode: RESTORE_DEFAULT_OFF    
+
+light:
+  - platform: monochromatic
+    id: pwm_led01
+    name: "terr_led01"
+    output: pwm_led_out01
+    restore_mode: RESTORE_DEFAULT_OFF    
+    gamma_correct: 3
+
+
+sensor:
+
+  - platform: aht10
+    variant: AHT20
+    temperature:
+      name: "Temp Terrasse"
+      filters:
+       - offset: 0
+    humidity:
+      name: "Humidity Terrasse"
+      filters:
+       - offset: 0
+    update_interval: 60s
+
+  - platform: bh1750
+    name: "Lux Terrasse"
+    address: 0x23
+    update_interval: 60s
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${device_name}"
+    update_interval: 60s
+
+  - platform: internal_temperature
+    name: "cpu-temp ${device_name}"
+    update_interval: 60s    
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    id: cam03_temp01
+    address: 0x3167d1c535646128
+    resolution: 12
+    update_interval: 20 s
+    accuracy_decimals: 2
+    name: "cam03_temp01"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    id: cam03_temp02
+    address: 0xbd25d9c535646128
+    resolution: 12
+    accuracy_decimals: 2
+    update_interval: 20 s
+    name: "cam03_temp02"
+
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    id: cam03_temp03
+    address: 0x4b77dbc535646128
+    resolution: 12
+    accuracy_decimals: 2
+    update_interval: 20 s
+    name: "cam03_temp03"
+
+climate:
+  - platform: pid
+    name: "PID house"
+    id: pid_climate01
+    sensor: cam03_temp01
+    default_target_temperature: 16°C
+    cool_output: pwm_fan02
+    control_parameters:
+      kp: 0.14727
+      ki: 0.00010
+      kd: 52.62963
+      output_averaging_samples: 5
+      derivative_averaging_samples: 5
+    deadband_parameters:
+      threshold_high: 0.5°C
+      threshold_low: -0.5°C
+
+  - platform: pid
+    name: "PID led"
+    id: pid_climate02
+    sensor: cam03_temp03
+    default_target_temperature: 19°C
+    cool_output: pwm_fan01
+    control_parameters:
+      kp: 0.64332
+      ki: 0.01191
+      kd: 8.68538
+      output_averaging_samples: 5
+      derivative_averaging_samples: 5
+    deadband_parameters:
+      threshold_high: 0.5°C
+      threshold_low: -0.5°C
+
+button:
+  - platform: template
+    name: "PID Autotune house"
+    on_press:
+      - climate.control:
+          id: pid_climate01
+          mode: AUTO
+      - climate.pid.autotune: pid_climate01
+
+  - platform: template
+    name: "PID Autotune led"
+    on_press:
+      - climate.control:
+          id: pid_climate02
+          mode: AUTO
+      - climate.pid.autotune: pid_climate02
+
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false
+
+
+binary_sensor:
+  - platform: gpio
+    name: "pir04"
+    id: pir04
+    pin: 
+      number: GPIO32
+    icon: mdi:motion-sensor
+    device_class: motion
+
+

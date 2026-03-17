@@ -1,41 +1,4 @@
-substitutions:
-  device_name: esp-05
-
-esphome:
-  name: ${device_name}
-
-
-esp8266:
-  board: d1_mini
-
-logger:
-  baud_rate: 0
-  level: DEBUG
-
-
-api:
-  encryption:
-    key: "CYLuun1/v8gzxp2rhNutFkVBz/Tjq/u7wjAiI6LOdtE="
-
-ota:
-  - platform: esphome
-    password: "b03c44d0ae92ca2a96b4226cd21e7798"
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-
-  ap:
-    ssid: "${device_name} Hotspot"
-    password: "pFjqLRL9yGmA"
-
 captive_portal:
-
-button:
-  - platform: restart
-    name: '${device_name} Restart'
-    internal: false 
-
 
 uart:
   id: uart_dsmr
@@ -43,49 +6,98 @@ uart:
     number: GPIO13
     inverted: true    
   baud_rate: 115200
-  rx_buffer_size: 1700
-  debug:
-    direction: RX
-    after:
-      delimiter: "\r\n"
-    sequence:
-      - lambda: UARTDebug::log_string(direction, bytes);
-
+  rx_buffer_size: 3000
 
 dsmr:
+  id: dsmr_instance
   uart_id: uart_dsmr
   decryption_key: !secret guek
-  max_telegram_length: 1700
+  max_telegram_length: 3000
 
 sensor:
   - platform: dsmr
     energy_delivered_tariff1:
       name: "Energy Delivered Tariff 1"
+      id: energy_t1
       state_class: total_increasing
-      accuracy_decimals: 3
     energy_delivered_tariff2:
       name: "Energy Delivered Tariff 2"
+      id: energy_t2
       state_class: total_increasing
-      accuracy_decimals: 3
     power_delivered:
       name: "Power Consumed"
-      accuracy_decimals: 3
+      id: power_now
       unit_of_measurement: kW
-    power_delivered_l1:
-      name: "power_l1"
-      unit_of_measurement: kW
-      
-  - platform: wifi_signal
-    name: "WiFi Signal ${device_name}"
-    update_interval: 60s  
+
+  # --- TEMPLATE SENSOREN FÜR ALLE WEITEREN WERTE ---
+  - platform: template
+    name: "Zählerstand Gesamt (1.8.0)"
+    id: energy_total
+    unit_of_measurement: "kWh"
+    state_class: total_increasing
+  
+  - platform: template
+    name: "Blindenergie Positiv T1 (3.8.1)"
+    id: blind_p_t1
+    unit_of_measurement: "kvarh"
+    state_class: total_increasing
+
+  - platform: template
+    name: "Blindenergie Positiv T2 (3.8.2)"
+    id: blind_p_t2
+    unit_of_measurement: "kvarh"
+    state_class: total_increasing
+
+  - platform: template
+    name: "Blindenergie Negativ T1 (4.8.1)"
+    id: blind_n_t1
+    unit_of_measurement: "kvarh"
+    state_class: total_increasing
+
+  - platform: template
+    name: "Blindenergie Negativ T2 (4.8.2)"
+    id: blind_n_t2
+    unit_of_measurement: "kvarh"
+    state_class: total_increasing
 
 text_sensor:
+  - platform: template
+    name: "Zähler Zeitstempel"
+    id: meter_time
+
   - platform: dsmr
-    identification:
-      name: "dsmr_identification"
-    p1_version:
-      name: "dsmr_p1_version"
-    electricity_tariff:
-      name: "aktueller Tarif"
     telegram:
       name: "telegram"
+      id: raw_telegram
+      on_value:
+        then:
+          - lambda: |-
+              auto extract = [&](std::string key) {
+                size_t pos = x.find(key);
+                if (pos != std::string::npos) {
+                  pos = x.find("(", pos);
+                  size_t end = x.find("*", pos);
+                  if (end == std::string::npos) end = x.find(")", pos);
+                  if (end != std::string::npos && end > pos) return x.substr(pos + 1, end - pos - 1);
+                }
+                return std::string("");
+              };
+              std::string v1 = extract("1-0:1.8.1");
+              std::string v2 = extract("1-0:1.8.2");
+              std::string vt = extract("1-0:1.8.0");
+              std::string vp = extract("1-0:1.7.0");
+              std::string bpt1 = extract("1-0:3.8.1");
+              std::string bpt2 = extract("1-0:3.8.2");
+              std::string bnt1 = extract("1-0:4.8.1");
+              std::string bnt2 = extract("1-0:4.8.2");
+              std::string ts = extract("0-0:1.0.0");
+
+              if (!v1.empty()) id(energy_t1).publish_state(atof(v1.c_str()) / 1000.0);
+              if (!v2.empty()) id(energy_t2).publish_state(atof(v2.c_str()) / 1000.0);
+              if (!vt.empty()) id(energy_total).publish_state(atof(vt.c_str()) / 1000.0);
+              if (!vp.empty()) id(power_now).publish_state(atof(vp.c_str()) / 1000.0);
+              if (!bpt1.empty()) id(blind_p_t1).publish_state(atof(bpt1.c_str()) / 1000.0);
+              if (!bpt2.empty()) id(blind_p_t2).publish_state(atof(bpt2.c_str()) / 1000.0);
+              if (!bnt1.empty()) id(blind_n_t1).publish_state(atof(bnt1.c_str()) / 1000.0);
+              if (!bnt2.empty()) id(blind_n_t2).publish_state(atof(bnt2.c_str()) / 1000.0);
+              if (!ts.empty()) id(meter_time).publish_state(ts);

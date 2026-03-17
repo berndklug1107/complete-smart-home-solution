@@ -14,25 +14,9 @@ esp32:
   board: esp32dev
   framework:
      type: arduino
+     advanced:
+      minimum_chip_revision: "3.1"
 
-logger:
-#  level: VERBOSE
-
-api:
-  encryption:
-    key:
-
-ota:
-  - platform: esphome
-    password:
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-
-  ap:
-    ssid: "${device_name} Hotspot"
-    password: "4RXYn4NSJQ81"
 
 captive_portal:
 
@@ -64,7 +48,7 @@ script:
       trigger_binary: esphome::binary_sensor::BinarySensor*
     mode: restart
     then:
-      - delay: 0.8s 
+      - delay: 1.2s 
       - while:
           condition:
             lambda: return trigger_binary->state;
@@ -182,7 +166,7 @@ output:
     address: 0x10
     power_supply: i2c_relay06_sw08
     min_power: 0.25
-    max_power: 0.7
+    max_power: 0.75
 
 # Dimmer Terrasse
   - platform: i2c_dimmer                 
@@ -198,7 +182,7 @@ output:
     id: dimmer_output12
     power_supply: i2c_relay06_sw05
     min_power: 0.25
-    max_power: 0.7
+    max_power: 0.75
 
 # Dimmer EZ Tisch
   - platform: i2c_dimmer                 
@@ -236,6 +220,41 @@ output:
       mcp23xxx: i2c_expand03
       number: 12
 
+
+switch:
+
+  - platform: gpio
+    name: "i2c_relay06_sw02"       # Lichtschacht WZ EZ
+    id: i2c_relay06_sw02
+    icon: mdi:lightbulb-fluorescent-tube-outline
+    pin:
+      pcf8574: i2c_relay06
+      number: 6
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio                   # leer
+    name: "i2c_relay06_sw01"
+    id: i2c_relay06_sw01
+    pin:
+      pcf8574: i2c_relay06
+      number: 1
+      mode:
+        output: true
+      inverted: true    
+
+#  - platform: gpio                   # tot
+#    name: "i2c_relay06_sw07"
+#    id: i2c_relay06_sw07
+#    pin:
+#      pcf8574: i2c_relay06
+#      number: 7
+#      mode:
+#        output: true
+#      inverted: false
+
+
 light:
   
   - platform: monochromatic         # Dimmer Wand EG/Stiege
@@ -250,6 +269,7 @@ light:
     id: ez_wand
     output: dimmer_output12
     icon: mdi:coach-lamp-variant
+    restore_mode: RESTORE_DEFAULT_OFF
     gamma_correct: 2
     name: "EZ Wand"
 
@@ -257,6 +277,7 @@ light:
     id: ez_tisch
     output: dimmer_output14
     icon: mdi:chandelier
+    restore_mode: RESTORE_DEFAULT_OFF
     gamma_correct: 2
     name: "EZ Tisch"
 
@@ -264,6 +285,7 @@ light:
     id: terrasse
     output: dimmer_output11
     icon: mdi:outdoor-lamp
+    restore_mode: RESTORE_DEFAULT_OFF
     gamma_correct: 1.6
     name: "Terrasse"
 
@@ -271,7 +293,7 @@ light:
     id: kuche_spots
     output: dimmer_output13
     icon: mdi:light-recessed
-    gamma_correct: 2
+    gamma_correct: 1.8  #2
     restore_mode: RESTORE_DEFAULT_OFF
     name: "Kuche Spots"
     effects:
@@ -307,6 +329,7 @@ light:
     id: led_01
     name: "led_01"
     output: led01
+    restore_mode: RESTORE_DEFAULT_OFF
     icon: mdi:led-on
 
   - platform: binary
@@ -314,26 +337,14 @@ light:
     name: "led_02"
     output: led02
     icon: mdi:led-on
+    restore_mode: RESTORE_DEFAULT_OFF
 
   - platform: binary
     id: led_03
     name: "led_03"
     output: led03
     icon: mdi:led-on
-
-
-switch:
-
-  - platform: gpio                 # Lichtschacht WZ EZ
-    name: "i2c_relay06_sw00"
-    id: i2c_relay06_sw00
-    icon: mdi:lightbulb-fluorescent-tube-outline
-    pin:
-      pcf8574: i2c_relay06
-      number: 7
-      mode:
-        output: true
-    inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
 
 sensor:
@@ -342,6 +353,10 @@ sensor:
     name: "WiFi Signal ${device_name}"
     update_interval: 60s
 
+  - platform: internal_temperature
+    name: "cpu-temp ${device_name}"
+    update_interval: 60s
+    
   - platform: dht
     pin: GPIO25
     temperature:
@@ -380,6 +395,10 @@ sensor:
 
 
 binary_sensor:
+
+  - platform: homeassistant
+    id: light02_status
+    entity_id: light.light02
 
   - platform: template
     id: dim_control01
@@ -437,11 +456,16 @@ binary_sensor:
             condition:
               light.is_off: light01
             then:
-              light.turn_on: 
-                id: light01
-                brightness: 0.4
+              - light.turn_on: 
+                  id: light01
+                  brightness: 0.5
+                  transition_length: 5s
+
             else:
-              light.turn_off: light01
+              - light.turn_off:
+                  id: light01
+                  transition_length: 8s
+
     on_press:
       then:
         - script.execute:
@@ -532,9 +556,13 @@ binary_sensor:
             then:
               light.turn_on: 
                 id: light01
-                brightness: 0.4
+                brightness: 0.5
+                transition_length: 5s
             else:
-              light.turn_off: light01
+              - light.turn_off:
+                  id: light01
+                  transition_length: 8s                
+
 
     on_press:
       then:
@@ -576,12 +604,15 @@ binary_sensor:
             condition:
               light.is_off: terrasse
             then:
-              light.turn_on: 
-                id: terrasse
-                brightness: 0.4
+              - light.turn_on: 
+                  id: terrasse
+                  brightness: 0.4
+                  transition_length: 5s
             else:
-              light.turn_off: terrasse
-              
+              - light.turn_off:
+                  id: terrasse
+                  transition_length: 8s
+
     on_press:
       then:
         - script.execute:
@@ -642,8 +673,9 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_kueche
-              media_content_id: "http://10.0.0.69:8082/rock"    
-              media_content_type: "music"
+              media_content_id: "http://10.0.0.30:8082/rock"    
+#              media_content_type: "music"
+              media_content_type: "audio/flac"
     - timing:
         - ON for 0.8s to 1.5s
         - OFF for at least 0.4s
@@ -652,8 +684,8 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_kueche
-              media_content_id: "http://10.0.0.77:8082/main"
-              media_content_type: "music"
+              media_content_id: "http://10.0.0.31:8082/main"
+              media_content_type: "audio/flac"
     - timing:
         - ON for at most 0.3s
         - OFF for at most 0.3s
@@ -666,8 +698,8 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_kueche
-              media_content_id: "http://10.0.0.30:8082/mellow"
-              media_content_type: "music"
+              media_content_id: "http://10.0.0.33:8082/mellow"
+              media_content_type: "audio/flac"
 
     - timing:
         - ON for at most 0.3s
@@ -677,11 +709,14 @@ binary_sensor:
             condition:
               light.is_off: kuche_spots
             then:
-              light.turn_on: 
-                id: kuche_spots
-                brightness: 0.8
+              - light.turn_on: 
+                 id: kuche_spots
+                 brightness: 0.9
+                 transition_length: 5s
             else:
-              light.turn_off: kuche_spots
+              - light.turn_off:
+                  id: kuche_spots
+                  transition_length: 8s
               
     on_press:
       then:
@@ -690,7 +725,6 @@ binary_sensor:
             target_light: kuche_spots
             trigger_binary: bin_sens_30
       
-
 
   - platform: gpio            # EZ Tür mitte (T)	
     name: "bin_sens_31"
@@ -709,47 +743,19 @@ binary_sensor:
         - OFF for at least 0.4s
       then:
          - homeassistant.service:
-             service: script.turn_on
+             service: cover.close_cover
              data:
-               entity_id: script.cover_close_wohnraum_def
+               entity_id: cover.warema_front
                
     - timing:
         - ON for 0.3s to 0.8s
         - OFF for at least 0.4s
       then:
          - homeassistant.service:
-             service: cover.close_cover
+             service: cover.open_cover
              data:
                entity_id: cover.warema_front
 
-    - timing:
-        - ON for 0.8s to 1.4s
-        - OFF for at least 0.4s
-      then:
-         - homeassistant.service:
-             service: cover.close_cover
-             data:
-               entity_id: cover.warema_wz
-    - timing:
-        - ON for at most 0.3s
-        - OFF for at most 0.3s
-        - ON for 0.3s to 0.8s
-        - OFF for at least 0.4s
-      then:
-         - homeassistant.service:
-             service: cover.close_cover
-             data:
-               entity_id: cover.warema4
-    - timing:
-        - ON for at most 0.3s
-        - OFF for at most 0.3s
-        - ON for 0.8s to 1.4s
-        - OFF for at least 0.4s
-      then:
-         - homeassistant.service:
-             service: cover.close_cover
-             data:
-               entity_id: cover.warema5
     - timing:
         - ON for at most 0.3s
         - OFF for at most 0.3s
@@ -759,7 +765,11 @@ binary_sensor:
          - homeassistant.service:
              service: cover.stop_cover
              data:
-               entity_id: cover.warema_alle
+               entity_id: cover.warema_front
+
+
+
+               
 
   - platform: gpio              # EZ Tür oben rechts (T)
     name: "bin_sens_32"
@@ -792,7 +802,7 @@ binary_sensor:
              service: media_player.select_source
              data:
                entity_id: media_player.t758
-               source: "Mix 01"
+               source: "Mix"
 
     - timing:
         - ON for at most 0.3s
@@ -838,12 +848,15 @@ binary_sensor:
             condition:
               light.is_off: ez_tisch
             then:
-              light.turn_on: 
-                id: ez_tisch
-                brightness: 0.4
+              -  light.turn_on: 
+                  id: ez_tisch
+                  brightness: 0.5
+                  transition_length: 5s
             else:
-              light.turn_off: ez_tisch
-              
+              - light.turn_off:
+                 id: ez_tisch
+                 transition_length: 8s
+
     on_press:
       then:
         - script.execute:
@@ -905,11 +918,14 @@ binary_sensor:
             condition:
               light.is_off: ez_wand
             then:
-              light.turn_on: 
-                id: ez_wand
-                brightness: 0.4
+              - light.turn_on: 
+                  id: ez_wand
+                  brightness: 0.5
+                  transition_length: 5s
             else:
-              light.turn_off: ez_wand
+              - light.turn_off:
+                  id: ez_wand
+                  transition_length: 8s
               
     on_press:
       then:
@@ -953,11 +969,22 @@ binary_sensor:
         - ON for at most 0.3s
         - OFF for at least 0.6s
       then:
-         - homeassistant.service:
-             service: light.toggle
-             data:
-               entity_id: light.light02
-               brightness_pct: "40"
+        - if:
+            condition:
+              binary_sensor.is_off: light02_status
+            then:
+              - homeassistant.service:
+                  service: light.turn_on
+                  data:
+                    entity_id: light.light02
+                    brightness_pct: "50"
+                    transition: "5"
+            else:
+              - homeassistant.service:
+                  service: light.turn_off
+                  data:
+                    entity_id: light.light02
+                    transition: "8"
 
     on_press:
       then:
@@ -1060,11 +1087,14 @@ binary_sensor:
             condition:
               light.is_off: light01
             then:
-              light.turn_on: 
-                id: light01
-                brightness: 0.4
+              - light.turn_on: 
+                  id: light01
+                  brightness: 0.8
+                  transition_length: 5s
             else:
-              light.turn_off: light01
+              - light.turn_off:
+                  id: light01
+                  transition_length: 8s
               
     on_press:
       then:
@@ -1072,7 +1102,6 @@ binary_sensor:
             id: dimm_script01
             target_light: light01
             trigger_binary: bin_sens_84
-
 
 
   - platform: gpio                            # Küchentür
@@ -1127,8 +1156,8 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_kueche
-              media_content_id: "http://10.0.0.69:8082/rock"            
-              media_content_type: "music"
+              media_content_id: "http://10.0.0.30:8082/rock"            
+              media_content_type: "audio/flac"
 
     - timing:
         - ON for 0.8s to 1.5s
@@ -1138,8 +1167,8 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_kueche
-              media_content_id: "http://10.0.0.77:8082/main"
-              media_content_type: "music"
+              media_content_id: "http://10.0.0.31:8082/main"
+              media_content_type: "audio/flac"
 
     - timing:
         - ON for at most 0.3s
@@ -1153,8 +1182,8 @@ binary_sensor:
             service: media_player.play_media
             data:
               entity_id: media_player.nad_kueche
-              media_content_id: "http://10.0.0.30:8082/mellow"
-              media_content_type: "music"
+              media_content_id: "http://10.0.0.33:8082/mellow"
+              media_content_type: "audio/flac"
 
     - timing:
         - ON for at most 0.3s
@@ -1164,11 +1193,14 @@ binary_sensor:
             condition:
               light.is_off: kuche_spots
             then:
-              light.turn_on: 
-                id: kuche_spots
-                brightness: 0.8
+              - light.turn_on: 
+                  id: kuche_spots
+                  brightness: 0.9
+                  transition_length: 5s
             else:
-              light.turn_off: kuche_spots
+              - light.turn_off:
+                  id: kuche_spots
+                  transition_length: 8s
               
     on_press:
       then:
@@ -1239,11 +1271,15 @@ binary_sensor:
             condition:
               light.is_off: terrasse
             then:
-              light.turn_on: 
-                id: terrasse
-                brightness: 0.4
+              - light.turn_on: 
+                  id: terrasse
+                  brightness: 0.4
+                  transition_length: 5s
+
             else:
-              light.turn_off: terrasse
+              - light.turn_off:
+                  id: terrasse
+                  transition_length: 8s
               
     on_press:
       then:
@@ -1315,11 +1351,14 @@ binary_sensor:
             condition:
               light.is_off: terrasse
             then:
-              light.turn_on: 
-                id: terrasse
-                brightness: 0.4
+              - light.turn_on: 
+                  id: terrasse
+                  brightness: 0.4
+                  transition_length: 5s
             else:
-              light.turn_off: terrasse
+              - light.turn_off:
+                  id: terrasse
+                  transition_length: 8s
               
     on_press:
       then:

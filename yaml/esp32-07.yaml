@@ -1,0 +1,270 @@
+substitutions:
+  device_name: esp32-07
+
+esphome:
+  name: ${device_name}
+
+esp32:
+  board: esp32dev
+  framework:
+     type: esp-idf
+     advanced:
+      minimum_chip_revision: "3.1"     
+
+logger:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "${device_name} Hotspot"
+    password: "V9Zyt6E9PsZ1"
+
+captive_portal:
+
+button:
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false
+
+script:
+  - id: dimm_wz01
+    parameters:
+      target_light: esphome::light::LightState*
+      trigger_binary: esphome::binary_sensor::BinarySensor*
+    mode: restart
+    then:
+      - delay: 0.8s 
+      - while:
+          condition:
+            lambda: return trigger_binary->state;
+          then:
+            - lambda: |-
+                if (target_light == nullptr || trigger_binary == nullptr) return;
+                float current_b = target_light->remote_values.get_brightness();
+                static bool dim_up = true; 
+                if (current_b < 0.05f) dim_up = true;
+                else if (current_b > 0.95f) dim_up = false;
+
+                float step = dim_up ? 0.02f : -0.02f;
+                float new_brightness = current_b + step;
+                
+                if (new_brightness > 1.0f) new_brightness = 1.0f;
+                if (new_brightness < 0.01f) new_brightness = 0.01f;
+
+                auto call = target_light->make_call();
+                call.set_brightness(new_brightness);
+                call.set_state(true);
+                call.set_transition_length(100);
+                call.perform();
+            - delay: 0.1s
+
+i2c:
+  - id: bus_a
+    sda: GPIO18
+    scl: GPIO19
+    scan: true
+
+one_wire:
+  - platform: gpio
+    pin: GPIO17
+    id: hub_01
+
+pcf8574:
+  - id: i2c_relay07
+    address: 0x27
+    pcf8575: false
+    i2c_id: bus_a
+    
+output:
+  - platform: ledc
+    pin: GPIO23
+    id: dimmer_wz01
+    frequency: 1000 Hz
+    min_power: 0.001
+    max_power: 0.9
+    zero_means_zero: true
+
+  - platform: ledc
+    pin: GPIO16
+    id: dimmer_wz02
+    frequency: 1000 Hz
+    min_power: 0.001
+    max_power: 0.9
+    zero_means_zero: true
+
+  - platform: gpio
+    id: led01
+    pin: GPIO25
+
+  - platform: gpio
+    id: led02
+    pin: GPIO26
+
+switch:
+  - platform: gpio                # usb hub
+    name: "i2c_relay07_sw00"
+    id: i2c_relay07_sw00
+    pin:
+      pcf8574: i2c_relay07
+      number: 4
+      mode:
+        output: true
+    inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    name: "i2c_relay07_sw02"      # Phono
+    id: i2c_relay07_sw02
+    pin:
+      pcf8574: i2c_relay07
+      number: 6
+      mode:
+        output: true
+    inverted: true
+    on_turn_on:
+      then:
+        - light.turn_on:
+            id: led_phono
+            brightness: 0.8
+            transition_length: 5s
+    on_turn_off:
+      then:
+        - light.turn_off:
+            id: led_phono
+            transition_length: 8s
+    restore_mode: RESTORE_DEFAULT_OFF
+    
+light:
+  - platform: binary
+    id: led_trigger
+    name: led_trigger
+    output: led01
+    icon: mdi:led-on
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: binary
+    id: led_phono
+    name: led_phono
+    output: led02
+    icon: mdi:led-on
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: monochromatic
+    id: light_wz01
+    icon: mdi:light-recessed
+    name: "wz01"
+    output: dimmer_wz01
+    restore_mode: RESTORE_DEFAULT_OFF
+#    gamma_correct: 3
+
+  - platform: monochromatic
+    id: light_wz02
+    icon: mdi:light-recessed
+    name: "wz02"
+    output: dimmer_wz02
+    restore_mode: RESTORE_DEFAULT_OFF
+
+
+binary_sensor:
+  - platform: gpio
+    name: "bin_sens_wz01"
+    id: bin_sens_wz01
+    pin:
+      number: 27
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    device_class: sound
+    on_multi_click:
+    - timing:                                   # phono
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.3s
+      then:
+        - switch.toggle: i2c_relay07_sw02
+
+    - timing:                                   # usb hub
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for 0.3s to 0.8s
+        - OFF for at least 0.4s
+      then:
+        - switch.toggle: i2c_relay07_sw00
+
+    - timing:                                   # LED phono
+        - ON for at most 0.3s
+        - OFF for at most 0.3s
+        - ON for at most 0.3s
+        - OFF for at least 0.4s
+      then:
+        - if:
+            condition:
+              light.is_off: light_wz02
+            then:
+              - light.turn_on: 
+                  id: light_wz02
+                  brightness: 0.5
+                  transition_length: 5s
+
+            else:
+              - light.turn_off:
+                  id: light_wz02
+                  transition_length: 8s
+
+    - timing:                                   # LED x 3
+        - ON for at most 0.3s
+        - OFF for at least 0.6s
+      then:
+        - if:
+            condition:
+              light.is_off: light_wz01
+            then:
+              - light.turn_on: 
+                  id: light_wz01
+                  brightness: 0.6
+                  transition_length: 5s
+
+            else:
+              - light.turn_off:
+                  id: light_wz01
+                  transition_length: 8s
+
+    on_press:                                   # LED x 3
+      then:
+        - script.execute:
+            id: dimm_wz01
+            target_light: light_wz01
+            trigger_binary: bin_sens_wz01
+
+sensor:
+  - platform: dallas_temp
+    one_wire_id: hub_01
+    address: 0x5be2fec535646128
+    resolution: 12
+    accuracy_decimals: 2
+    name: "Temp Unit_WZ"
+    filters:
+     - offset: -0.4
+
+  - platform: dht
+    pin: GPIO14
+    temperature:
+      name: "Temp WZ"
+      filters:
+       - offset: -0.7
+    humidity:
+      name: "Humidity WZ"
+      filters:
+       - offset: 0
+    model: dht22
+    update_interval: 50s
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${device_name}"
+    update_interval: 60s
+
+  - platform: internal_temperature
+    name: "cpu-temp ${device_name}"
+    update_interval: 60s    

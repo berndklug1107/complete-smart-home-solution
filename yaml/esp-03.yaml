@@ -4,22 +4,20 @@ substitutions:
 esphome:
   name: ${device_name}
 
+external_components:
+  - source:
+      type: local
+      path: components
+
 esp8266:
   board: d1_mini
 
 logger:
 
-api:
-  encryption:
-    key: 
-
-ota:
-  - platform: esphome
-    password: 
-
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  min_auth_mode: WPA
 
   ap:
     ssid: "${device_name} Hotspot"
@@ -33,6 +31,52 @@ mqtt:
   password: mqtt
   discovery: false
 
+  on_message:
+    - topic: "dimmer/dimm_script02"
+      payload: "pressed02"
+      then:
+        - lambda: id(dim_control02).publish_state(true);
+        - script.execute:
+            id: dimm_script02
+            target_light: light02
+            trigger_binary: dim_control02
+    - topic: "dimmer/dimm_script02"
+      payload: "released02"
+      then:
+        - lambda: id(dim_control02).publish_state(false);
+
+script:
+  - id: dimm_script02
+    parameters:
+      target_light: esphome::light::LightState*
+      trigger_binary: esphome::binary_sensor::BinarySensor*
+    mode: restart
+    then:
+      - delay: 1.2s 
+      - while:
+          condition:
+            lambda: return trigger_binary->state;
+          then:
+            - lambda: |-
+                if (target_light == nullptr || trigger_binary == nullptr) return;         
+                float current_b = target_light->remote_values.get_brightness();
+                static bool dim_up = true; 
+                if (current_b < 0.05f) dim_up = true;
+                else if (current_b > 0.95f) dim_up = false;
+
+                float step = dim_up ? 0.02f : -0.02f;
+                float new_brightness = current_b + step;
+                
+                if (new_brightness > 1.0f) new_brightness = 1.0f;
+                if (new_brightness < 0.01f) new_brightness = 0.01f;
+
+                auto call = target_light->make_call();
+                call.set_brightness(new_brightness);
+                call.set_state(true);
+                call.set_transition_length(100);
+                call.perform();
+            - delay: 0.1s
+
 i2c:
   - id: bus_a
     sda: GPIO4
@@ -44,11 +88,32 @@ mcp23017:
     address: 0x20
     i2c_id: bus_a
 
+output:
+  - platform: i2c_dimmer           # Dimmer Wandlicht Keller/Stiege      
+    address: 0x11
+    id: dimmer_output00
+    min_power: 0.25
+    max_power: 0.7
 
-button:
-  - platform: restart
-    name: '${device_name} Restart'
-    internal: false
+switch:
+  - platform: homeassistant       # remote-relay auf esp32-02
+    id: remote_relay_sw07
+    entity_id: switch.i2c_relay05_sw07
+
+light:
+  - platform: monochromatic         # Dimmer Wandlicht Keller/Stiege
+    id: light02
+    name: "light02"
+    gamma_correct: 2
+    output: dimmer_output00
+    icon: mdi:wall-sconce-round-variant-outline
+    on_turn_on:
+      then:
+        - switch.turn_on: remote_relay_sw07
+        - delay: 200ms 
+    on_turn_off:
+      then:
+        - switch.turn_off: remote_relay_sw07
 
 sensor:
   - platform: wifi_signal
@@ -81,10 +146,13 @@ sensor:
     update_interval: 50s
 
 
+
 binary_sensor:
 
+  - platform: template
+    id: dim_control02
+    internal: true  
                               #   P I R
-
   - platform: gpio
     name: "pir02"
     id: pir02
@@ -95,7 +163,6 @@ binary_sensor:
     device_class: motion
 
                             # Schalter
-
   - platform: gpio
     name: "bin_sens_49"
     id: bin_sens_49
@@ -111,7 +178,6 @@ binary_sensor:
       - mqtt.publish:
            topic: "esp32-02/switch/i2c_relay05_sw05/command"
            payload: "TOGGLE"      
-
 
   - platform: gpio
     name: "bin_sens_50"
@@ -130,23 +196,32 @@ binary_sensor:
         - ON for at most 0.3s
         - OFF for at least 0.6s
       then:
-         - homeassistant.service:
-             service: light.toggle
-             data:
-               entity_id: light.light02
-               brightness_pct: "40"
+      #  - homeassistant.service:
+      #      service: switch.turn_on
+      #      data:
+      #        entity_id: switch.i2c_relay05_sw07
+      #  - delay: 100ms        
+        - if:
+           condition:
+             light.is_off: light02
+           then:
+             light.turn_on: 
+               id: light02
+               brightness: 0.4
+           else:
+             light.turn_off: light02
 
     on_press:
       then:
-        - mqtt.publish:
-            topic: "dimmer/dimm_script02"
-            payload: "pressed02"
-    on_release:
-      then:
-        - mqtt.publish:
-            topic: "dimmer/dimm_script02"
-            payload: "released02"
-
+      #  - homeassistant.service:
+      #      service: switch.turn_on
+      #      data:
+      #        entity_id: switch.i2c_relay05_sw07
+      #  - delay: 100ms 
+        - script.execute:
+            id: dimm_script02
+            target_light: light02
+            trigger_binary: bin_sens_50
 
   - platform: gpio
     name: "bin_sens_51"
@@ -186,7 +261,6 @@ binary_sensor:
              data:
                entity_id: light.light03
                brightness_pct: "40"
-
     on_press:
       then:
         - mqtt.publish:
@@ -214,7 +288,6 @@ binary_sensor:
            topic: "esp32-02/switch/i2c_relay05_sw03/command"
            payload: "TOGGLE" 
 
-
   - platform: gpio
     name: "bin_sens_54"
     id: bin_sens_54
@@ -231,6 +304,7 @@ binary_sensor:
            topic: "esp32-02/switch/i2c_relay05_sw01/command"
            payload: "TOGGLE" 
 
+
   - platform: gpio
     name: "bin_sens_55"
     id: bin_sens_55
@@ -242,28 +316,38 @@ binary_sensor:
         pullup: true
       inverted: true
     device_class: light
-    on_multi_click:
 
+    on_multi_click:
     - timing:
         - ON for at most 0.3s
         - OFF for at least 0.6s
       then:
-         - homeassistant.service:
-             service: light.toggle
-             data:
-               entity_id: light.light02
-               brightness_pct: "40"
-               
+      #  - homeassistant.service:
+      #      service: switch.turn_on
+      #      data:
+      #        entity_id: switch.i2c_relay05_sw07
+      #  - delay: 100ms        
+        - if:
+           condition:
+             light.is_off: light02
+           then:
+             light.turn_on: 
+               id: light02
+               brightness: 0.4
+           else:
+             light.turn_off: light02
+
     on_press:
       then:
-        - mqtt.publish:
-            topic: "dimmer/dimm_script02"
-            payload: "pressed02"
-    on_release:
-      then:
-        - mqtt.publish:
-            topic: "dimmer/dimm_script02"
-            payload: "released02"
+      #  - homeassistant.service:
+      #      service: switch.turn_on
+      #      data:
+      #        entity_id: switch.i2c_relay05_sw07
+      #  - delay: 100ms
+        - script.execute:
+            id: dimm_script02
+            target_light: light02
+            trigger_binary: bin_sens_55
 
   - platform: gpio
     name: "bin_sens_56"
@@ -293,7 +377,6 @@ binary_sensor:
       inverted: true
     device_class: light
 
-
   - platform: gpio
     name: "bin_sens_58"
     id: bin_sens_58
@@ -309,3 +392,8 @@ binary_sensor:
       - mqtt.publish:
            topic: "esp32-02/switch/i2c_relay05_sw06/command"
            payload: "TOGGLE" 
+
+button:
+  - platform: restart
+    name: '${device_name} Restart'
+    internal: false

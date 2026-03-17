@@ -28,7 +28,10 @@ bin_sens.txt gives overview of binary_sensor connection and location, relays.txt
 Anyway, the delayed_on_off function in esphome should be used, you never know which kind of engines or interferences the AC lines in your house/flat are exposed to.
 You will need some knowledge base about wiring, good tools (soldering iron, solder) and a very clean, accurate work style. Don’t use cheap junk from china, you will regret it.
 
-The big goal of binary_sensors is the capability to handle more or less all available entities in your home. In /yaml you find the config-files of all esp devices (esp01 - esp04, esp32-01 - esp32-06, esp05 is dsmr to get smartmeter data, energy consumption). With one binary_sensor you can handle at least 8 operations, good example is bin_sens_85 on esp32-05: 3 operations for blinder handling, 2 operations for light control and dimming, 2 operations for streaming service on media_player.nad_kueche (stream_main.h, stream_rock.h). bin_sens_70 shows the way how to open garage from outside (modified 😁)
+esp05 reads all data from Sagecom T210-D-r Smart Meter which is used by Energie Steiermark.
+
+The big goal of binary_sensors is the capability to handle more or less all available entities in your home. In /yaml you find the config-files of all esp devices (esp01 - esp04, esp32-01 - esp32-07).
+With one binary_sensor you can handle at least 8 operations, good example is bin_sens_85 on esp32-05: 3 operations for blinder handling, 2 operations for light control and dimming, 2 operations for streaming service on media_player.nad_kueche (stream_main.h, stream_rock.h). bin_sens_70 shows the way how to open garage from outside (modified 😁)
 
 #
 #
